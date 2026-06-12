@@ -1,0 +1,13 @@
+{
+  "name": "liuren-web",
+  "version": "1.0.0",
+  "description": "大六壬在线排盘预测",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "liuren-ts-lib": "^3.0.0"
+  }
+}

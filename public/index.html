@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大六壬 · 在线排盘预测</title>
+  <style>
+    :root {
+      --bg: #0b0e12;
+      --card: #11161d;
+      --border: #1e2833;
+      --gold: #c8a96e;
+      --gold-light: #e8d5b0;
+      --text: #b0b8c1;
+      --text-light: #8a94a0;
+      --red: #e05555;
+      --green: #4caf84;
+      --blue: #5b9bd5;
+      --purple: #a085d5;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 32px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 24px; color: var(--gold); letter-spacing: 2px; margin-bottom: 4px; }
+    .header .sub { font-size: 13px; color: var(--text-light); }
+
+    /* Input Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 14px;
+      color: var(--gold-light);
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title::before { content: ''; width: 3px; height: 16px; background: var(--gold); border-radius: 2px; }
+
+    .input-row {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;
+    }
+    .input-group { display: flex; flex-direction: column; gap: 4px; }
+    .input-group label { font-size: 11px; color: var(--text-light); letter-spacing: .5px; }
+    .input-group input, .input-group select {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); padding: 8px 12px; font-size: 14px; outline: none;
+      width: 80px; transition: border-color .2s;
+    }
+    .input-group input:focus, .input-group select:focus { border-color: var(--gold); }
+    .input-group input.wide { width: 60px; }
+    .btn {
+      background: linear-gradient(135deg, #c8a96e, #a8854e);
+      color: #fff; border: none; border-radius: 8px; padding: 9px 24px;
+      font-size: 14px; cursor: pointer; letter-spacing: 1px; font-weight: 600;
+      transition: opacity .2s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-now {
+      background: transparent; border: 1px solid var(--gold);
+      color: var(--gold); padding: 8px 16px; font-size: 13px;
+    }
+
+    /* Loading */
+    .loading { text-align: center; padding: 40px; display: none; }
+    .loading.show { display: block; }
+    .spinner {
+      width: 32px; height: 32px; border: 2px solid var(--border);
+      border-top-color: var(--gold); border-radius: 50%;
+      animation: spin .8s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result Area */
+    #result { display: none; }
+    #result.show { display: block; }
+
+    /* Info Bar */
+    .info-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+    }
+    .info-tag {
+      background: rgba(200,169,110,.1); border: 1px solid rgba(200,169,110,.2);
+      border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--gold-light);
+    }
+    .info-tag strong { color: var(--gold); }
+
+    /* Pan Table */
+    .pan-table {
+      width: 100%; border-collapse: collapse; margin-bottom: 16px;
+    }
+    .pan-table th, .pan-table td {
+      padding: 10px 6px; text-align: center; font-size: 13px;
+      border: 1px solid var(--border);
+    }
+    .pan-table th { background: rgba(200,169,110,.06); color: var(--gold-light); font-size: 11px; }
+    .pan-table .tg { color: var(--gold); font-size: 20px; font-weight: 700; }
+    .pan-table .dz { color: var(--text); font-size: 14px; }
+    .pan-table .jx { font-size: 11px; color: var(--text-light); }
+    .pan-table .dun { font-size: 10px; color: var(--purple); }
+
+    /* SiKe */
+    .sike-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+    }
+    .sike-item {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px; text-align: center;
+    }
+    .sike-item .label { font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
+    .sike-item .zhi { font-size: 22px; color: var(--gold); font-weight: 700; }
+    .sike-item .jiang { font-size: 12px; color: var(--text-light); }
+    .sike-item .rel { font-size: 10px; margin-top: 2px; }
+
+    /* SanChuan */
+    .sanchuan-track {
+      display: flex; gap: 10px; margin-bottom: 16px;
+    }
+    .sc-card {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 10px; text-align: center;
+      position: relative;
+    }
+    .sc-card.chu { border-color: rgba(200,169,110,.4); background: rgba(200,169,110,.05); }
+    .sc-card .phase { font-size: 10px; color: var(--text-light); margin-bottom: 2px; }
+    .sc-card .zhi { font-size: 26px; color: var(--gold); font-weight: 700; }
+    .sc-card .info { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .sc-card .keti-tag {
+      position: absolute; top: -10px; right: -4px;
+      background: var(--gold); color: #000; font-size: 10px;
+      padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    }
+    .sc-arrow {
+      display: flex; align-items: center; color: var(--gold); font-size: 18px;
+    }
+
+    /* TianJiang */
+    .tianjiang-list {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px;
+    }
+    .tj-item {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      padding: 6px; text-align: center; font-size: 11px;
+    }
+    .tj-item .zhi { color: var(--text-light); }
+    .tj-item .name { color: var(--gold-light); font-size: 12px; }
+    .tj-item.guiren { border-color: rgba(200,169,110,.5); background: rgba(200,169,110,.08); }
+
+    /* ShenSha */
+    .shensha-tags {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px;
+    }
+    .ss-tag {
+      font-size: 10px; padding: 2px 8px; border-radius: 4px;
+      background: rgba(200,169,110,.08); border: 1px solid rgba(200,169,110,.15);
+      color: var(--gold-light);
+    }
+    .ss-tag.bad { background: rgba(224,85,85,.08); border-color: rgba(224,85,85,.15); color: var(--red); }
+
+    /* Analysis */
+    .analysis-section {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; margin-top: 12px;
+    }
+    .analysis-section .title {
+      font-size: 13px; color: var(--gold); font-weight: 600; margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+    .analysis-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid rgba(30,40,51,.5);
+      font-size: 13px;
+    }
+    .analysis-row:last-child { border-bottom: none; }
+    .analysis-row .left { color: var(--text-light); }
+    .analysis-row .right { color: var(--text); font-weight: 500; }
+    .analysis-row .right.good { color: var(--green); }
+    .analysis-row .right.bad { color: var(--red); }
+    .analysis-row .right.warn { color: #d4a243; }
+
+    /* Footer */
+    .footer {
+      text-align: center; padding: 24px; color: var(--text-light);
+      font-size: 11px; border-top: 1px solid var(--border); margin-top: 32px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .sike-grid { grid-template-columns: 1fr 1fr; }
+      .sanchuan-track { flex-direction: column; gap: 6px; }
+      .sc-arrow { display: none; }
+      .tianjiang-list { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🔮 大六壬 · 在线排盘</h1>
+    <div class="sub">天地盘 · 四课 · 三传 · 十二天将 · 神煞</div>
+  </div>
+
+  <!-- Input -->
+  <div class="card">
+    <div class="card-title">起课时间</div>
+    <div class="input-row">
+      <div class="input-group"><label>年</label><input id="year" type="number" value="2026" class="wide"></div>
+      <div class="input-group"><label>月</label><input id="month" type="number" value="6" min="1" max="12" class="wide"></div>
+      <div class="input-group"><label>日</label><input id="day" type="number" value="12" min="1" max="31" class="wide"></div>
+      <div class="input-group"><label>时</label><input id="hour" type="number" value="22" min="0" max="23" class="wide"></div>
+      <div class="input-group"><label>分</label><input id="minute" type="number" value="30" min="0" max="59" class="wide"></div>
+      <button class="btn" onclick="doDivine()">起 课</button>
+      <button class="btn btn-now" onclick="divineNow()">此刻</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading"><div class="spinner"></div><div>起课中...</div></div>
+
+  <!-- Result -->
+  <div id="result"></div>
+
+  <div class="footer">晴子 · 大六壬预测 | 基于《大六壬指南》《毕法赋》</div>
+</div>
+
+<script>
+// ========== 五行生克 ==========
+const WX = { '寅':'木','卯':'木','巳':'火','午':'火','申':'金','酉':'金','亥':'水','子':'水','辰':'土','戌':'土','丑':'土','未':'土' };
+const GAN_WX = { '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水' };
+const WX_ORDER = ['木','火','土','金','水'];
+
+function keRel(shang, xia) {
+  const s = WX[shang] || '', x = WX[xia] || '';
+  if (!s || !x) return '';
+  const si = WX_ORDER.indexOf(s), xi = WX_ORDER.indexOf(x);
+  if (si === xi) return '比';
+  if ((si + 2) % 5 === xi) return '上克下⬇';
+  if ((xi + 2) % 5 === si) return '下克上⬆';
+  if ((xi + 1) % 5 === si) return '上生下'; // xia 生 shang
+  return '上生下';
+}
+
+function keRelGan(shangZhi, riGan) {
+  const sw = WX[shangZhi] || '', gw = GAN_WX[riGan] || '';
+  if (!sw || !gw) return '';
+  const si = WX_ORDER.indexOf(sw), gi = WX_ORDER.indexOf(gw);
+  if (si === gi) return '比';
+  if ((si + 2) % 5 === gi) return '克干⚡';
+  if ((gi + 2) % 5 === si) return '干克';
+  return '生';
+}
+
+// ========== 主函数 ==========
+async function doDivine() {
+  const y = +document.getElementById('year').value;
+  const m = +document.getElementById('month').value;
+  const d = +document.getElementById('day').value;
+  const h = +document.getElementById('hour').value;
+  const min = +document.getElementById('minute').value;
+
+  if (!y || !m || !d) { alert('请填写完整日期'); return; }
+
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('result').classList.remove('show');
+
+  try {
+    const resp = await fetch('/api/liuren', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ year: y, month: m, day: d, hour: h, minute: min })
+    });
+    const data = await resp.json();
+    if (data.error) { alert(data.error); return; }
+    renderResult(data);
+  } catch (e) {
+    alert('请求失败: ' + e.message);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+  }
+}
+
+async function divineNow() {
+  const now = new Date();
+  document.getElementById('year').value = now.getFullYear();
+  document.getElementById('month').value = now.getMonth() + 1;
+  document.getElementById('day').value = now.getDate();
+  document.getElementById('hour').value = now.getHours();
+  document.getElementById('minute').value = now.getMinutes();
+  await doDivine();
+}
+
+// ========== 渲染 ==========
+function renderResult(r) {
+  const bz = r.dateInfo.bazi.split(' ');
+  const riGanZhi = bz[2];
+  const riGan = riGanZhi[0], riZhi = riGanZhi[1];
+  const tp = r.tianDiPan.tianPan;
+  const tj = r.tianDiPan.tianJiang;
+  const ke = r.siKe;
+  const sc = r.sanChuan;
+
+  // 十二地支顺序
+  const ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+
+  // 天盘位置（天上圆盘式）
+  const pos = { top: ['巳','午','未','申'], right: ['辰','','','酉'], bottom: ['寅','丑','子','亥'], left: ['卯','','','戌'] };
+
+  let html = '';
+
+  // === 基本信息 ===
+  html += '<div class="info-bar">';
+  html += `<span class="info-tag">📅 ${r.dateInfo.date}</span>`;
+  html += `<span class="info-tag">八字 <strong>${r.dateInfo.bazi}</strong></span>`;
+  html += `<span class="info-tag">月将 <strong>${r.dateInfo.yuejiang}</strong></span>`;
+  html += `<span class="info-tag">空亡 <strong>${r.dateInfo.kong.join('')}</strong></span>`;
+  html += `<span class="info-tag">课体 <strong>${sc.keTi}</strong></span>`;
+  html += '</div>';
+
+  // === 天地盘 ===
+  html += '<div class="card"><div class="card-title">天 地 盘</div>';
+  html += '<table class="pan-table"><tbody>';
+  // 第一行：巳午未申
+  html += '<tr>';
+  ['巳','午','未','申'].forEach(z => {
+    html += `<td><div class="tg">${tp[z]||'?'}</div><div class="dz">${z}</div><div class="jx">${tj[z]||''}</div>`;
+    const dg = r.dunGan && r.dunGan[z] ? r.dunGan[z] : '';
+    if (dg) html += `<div class="dun">遁${dg}</div>`;
+    html += '</td>';
+  });
+  html += '</tr>';
+  // 第二行：辰 _ _ 酉
+  html += '<tr>';
+  ['辰','','','酉'].forEach(z => {
+    if (!z) { html += '<td></td>'; return; }
+    html += `<td><div class="tg">${tp[z]||'?'}</div><div class="dz">${z}</div><div class="jx">${tj[z]||''}</div></td>`;
+  });
+  html += '</tr>';
+  // 第三行：卯 _ _ 戌
+  html += '<tr>';
+  ['卯','','','戌'].forEach(z => {
+    if (!z) { html += '<td></td>'; return; }
+    html += `<td><div class="tg">${tp[z]||'?'}</div><div class="dz">${z}</div><div class="jx">${tj[z]||''}</div></td>`;
+  });
+  html += '</tr>';
+  // 第四行：寅丑子亥
+  html += '<tr>';
+  ['寅','丑','子','亥'].forEach(z => {
+    html += `<td><div class="tg">${tp[z]||'?'}</div><div class="dz">${z}</div><div class="jx">${tj[z]||''}</div>`;
+    const dg = r.dunGan && r.dunGan[z] ? r.dunGan[z] : '';
+    if (dg) html += `<div class="dun">遁${dg}</div>`;
+    html += '</td>';
+  });
+  html += '</tr></tbody></table></div>';
+
+  // === 四课 ===
+  html += '<div class="card"><div class="card-title">四 课</div>';
+  html += '<div class="sike-grid">';
+  const keNames = ['第一课·干阳', '第二课·干阴', '第三课·支阳', '第四课·支阴'];
+  for (let i = 0; i < 4; i++) {
+    const kk = 'ke' + (i+1);
+    const k = ke[kk];
+    const shangZhi = k[0].charAt(0);
+    const xiaZhi = i === 0 ? '' : (i === 2 ? riZhi : (i === 1 ? ke.ke1[0].charAt(0) : ke.ke3[0].charAt(0)));
+    const rel = (i === 0) ? keRelGan(shangZhi, riGan) : (i === 2) ? keRel(shangZhi, riZhi) : keRel(shangZhi, xiaZhi);
+    html += `<div class="sike-item">`;
+    html += `<div class="label">${keNames[i]}</div>`;
+    html += `<div class="zhi">${k[0]}</div>`;
+    html += `<div class="jiang">${k[1]}</div>`;
+    if (rel) html += `<div class="rel">${rel}</div>`;
+    html += `</div>`;
+  }
+  html += '</div></div>';
+
+  // === 三传 ===
+  html += '<div class="card"><div class="card-title">三 传</div>';
+  html += '<div class="sanchuan-track">';
+  html += `<div class="sc-card chu"><div class="keti-tag">${sc.keTi}</div><div class="phase">初传 · 发端</div><div class="zhi">${sc.chuChuan[0]}</div><div class="info">${sc.chuChuan[1]} · ${sc.chuChuan[2]} · 遁${sc.chuChuan[3]}</div></div>`;
+  html += '<div class="sc-arrow">→</div>';
+  html += `<div class="sc-card"><div class="phase">中传 · 过程</div><div class="zhi">${sc.zhongChuan[0]}</div><div class="info">${sc.zhongChuan[1]} · ${sc.zhongChuan[2]} · ${sc.zhongChuan[3] ? '遁'+sc.zhongChuan[3] : '旬空'}</div></div>`;
+  html += '<div class="sc-arrow">→</div>';
+  html += `<div class="sc-card"><div class="phase">末传 · 结局</div><div class="zhi">${sc.moChuan[0]}</div><div class="info">${sc.moChuan[1]} · ${sc.moChuan[2]} · 遁${sc.moChuan[3]}</div></div>`;
+  html += '</div></div>';
+
+  // === 十二天将 ===
+  html += '<div class="card"><div class="card-title">十二天将</div>';
+  html += '<div class="tianjiang-list">';
+  for (const z of ZHI) {
+    const isGui = tj[z] === '贵人';
+    html += `<div class="tj-item${isGui?' guiren':''}"><div class="zhi">${z}</div><div class="name">${tj[z]||'?'}</div></div>`;
+  }
+  html += '</div></div>';
+
+  // === 干支分析 ===
+  const ganShangZhi = ke.ke1[0].charAt(0);
+  const zhiShangZhi = ke.ke3[0].charAt(0);
+
+  html += '<div class="card"><div class="card-title">干支速断</div>';
+  html += '<div class="analysis-section">';
+  
+  html += `<div class="analysis-row"><span class="left">日干支</span><span class="right">${riGanZhi}</span></div>`;
+  html += `<div class="analysis-row"><span class="left">干上神（己身）</span><span class="right">${ke.ke1[0]} · ${ke.ke1[1]}</span></div>`;
+  html += `<div class="analysis-row"><span class="left">支上神（他人/宅）</span><span class="right">${ke.ke3[0]} · ${ke.ke3[1]}</span></div>`;
+  
+  // 干上神吉凶
+  const ganShangJiang = ke.ke1[1];
+  const ganGood = ['贵人','青龙','六合','太常'];
+  const ganBad = ['白虎','腾蛇','玄武','天空'];
+  const ganIsGood = ganGood.includes(ganShangJiang);
+  const ganIsBad = ganBad.includes(ganShangJiang);
+  
+  html += `<div class="analysis-row"><span class="left">干上气势</span>`;
+  if (ganIsGood) html += `<span class="right good">🟢 吉将临身 · 气势通畅</span>`;
+  else if (ganIsBad) html += `<span class="right bad">🔴 ${ganShangJiang}覆干 · 压力在身</span>`;
+  else html += `<span class="right warn">🟡 中性 · 平淡待时</span>`;
+  html += `</div>`;
+
+  // 支上对比
+  const zhiShangJiang = ke.ke3[1];
+  const zhiIsGood = ganGood.includes(zhiShangJiang);
+  const zhiIsBad = ganBad.includes(zhiShangJiang);
+  
+  html += `<div class="analysis-row"><span class="left">支上气势</span>`;
+  if (zhiIsGood) html += `<span class="right good">🟢 青龙得生 · 彼方气旺</span>`;
+  else if (zhiIsBad) html += `<span class="right bad">🔴 凶将临支 · 彼方受压</span>`;
+  else html += `<span class="right">— 平常</span>`;
+  html += `</div>`;
+
+  // 课体简析
+  const keti = sc.keTi;
+  let ketiNote = '';
+  if (keti.includes('元首')) ketiNote = '上克下，顺局，百事宜先发制人';
+  else if (keti.includes('重审')) ketiNote = '下克上，逆局，事须三思后行';
+  else if (keti.includes('涉害')) ketiNote = '多克并存，事情复杂需抉择';
+  else if (keti.includes('遥克')) ketiNote = '力轻如蒿矢/弹射，远而无力';
+  else if (keti.includes('反吟')) ketiNote = '反复不定，来得快去得快';
+  else if (keti.includes('伏吟')) ketiNote = '迟滞不动，守旧待时';
+  else ketiNote = '详见三传分析';
+  
+  html += `<div class="analysis-row"><span class="left">课体简析</span><span class="right">${keti} · ${ketiNote}</span></div>`;
+  
+  html += '</div></div>';
+
+  // === 神煞 ===
+  html += '<div class="card"><div class="card-title">神 煞</div>';
+  html += '<div class="shensha-tags">';
+  const badShas = ['白虎','腾蛇','岁破','劫煞','破碎','丧门','吊客','死气','死神'];
+  for (const s of r.shenSha) {
+    const isBad = badShas.includes(s.name);
+    html += `<span class="ss-tag${isBad?' bad':''}">${s.name}·${s.value}</span>`;
+  }
+  html += '</div></div>';
+
+  document.getElementById('result').innerHTML = html;
+  document.getElementById('result').classList.add('show');
+}
+
+// 页面加载自动排盘
+window.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('year').value) doDivine();
+});
+</script>
+</body>
+</html>
