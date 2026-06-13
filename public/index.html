@@ -194,12 +194,16 @@ async function go(){
   $('ld').classList.add('on');$('result').classList.remove('on');
   window.scrollTo({top:0,behavior:'smooth'});
   try{
-    const resp=await fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:0})});
+    const question=$('sq').value.trim();
+    const [resp,aiResp]=await Promise.all([
+      fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:0})}),
+      fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,question})})
+    ]);
     const r=await resp.json();
     if(r.error){alert(r.error);return}
-    const question=$('sq').value.trim();
+    const aiResult=await aiResp.json().catch(()=>({fallback:true}));
     showTime(r.dateInfo,y,m,d,h);
-    renderAnalysis(r,question);
+    renderAnalysis(r,question,aiResult);
   }catch(e){alert('请求失败: '+e.message)}
   finally{$('ld').classList.remove('on')}
 }
@@ -447,12 +451,11 @@ function analyzeContext(q,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,di){
 }
 
 // ============================================================
-//  渲 染（仅保留分析报告）
+//  渲 染
 // ============================================================
-function renderAnalysis(r,question){
+function renderAnalysis(r,question,aiResult){
   const bz=r.dateInfo.bazi.split(' '),riGan=bz[2][0],riZhi=bz[2][1];
   const sc=r.sanChuan;
-  const analysis=buildAnalysis(r,question);
   let h='';
 
   // 信息条
@@ -464,26 +467,42 @@ function renderAnalysis(r,question){
   h+=`<span class="it">驿马 <b>${r.dateInfo.yima}</b></span>`;
   h+='</div>';
 
-  // 分析报告
-  h+='<div class="an-card"><div class="an-title">📋 断 课 分 析 报 告</div>';
+  // 判断用 AI 还是规则引擎
+  const useAI = aiResult && !aiResult.fallback && aiResult.content;
+  const aiLabel = useAI ? '🤖 AI 深度解读' : '📋 规则断课报告';
+  const aiSub = useAI ? '' : (aiResult?.reason ? `（AI 不可用：${aiResult.reason}，使用本地规则引擎）` : '');
 
-  for(const b of analysis){
-    const lv=b.level||'平';
-    const bc=lv==='吉'?'good':lv==='凶'?'bad':'warn';
-    const badge=lv==='吉'?'🟢 吉':lv==='凶'?'🔴 凶':'🟡 平';
-    h+=`<div class="an-block">`;
-    h+=`<div class="an-h">${b.title}<span class="an-tag ${bc}">${badge}</span></div>`;
-    if(b.sub)h+=`<div class="an-sub">${b.sub}</div>`;
-    h+=`<div class="an-p">${b.content.replace(/\n/g,'<br>')}</div>`;
-    h+='</div>';
+  h+=`<div class="an-card"><div class="an-title">${aiLabel}</div>`;
+  if(aiSub)h+=`<div style="text-align:center;font-size:11px;color:var(--dim2);margin-bottom:18px">${aiSub}</div>`;
+
+  if(useAI){
+    // AI 输出：直接展示，用简单段落格式
+    const aiHtml = aiResult.content
+      .replace(/\*\*(.+?)\*\*/g,'<em>$1</em>')
+      .replace(/###?\s*(.+)/g,'<div class="an-h" style="margin-top:16px">$1</div>')
+      .replace(/\n\n/g,'</p><p class="an-p">')
+      .replace(/\n/g,'<br>');
+    h+=`<div class="an-p"><p class="an-p">${aiHtml}</p></div>`;
+    h+=`<div class="an-summary"><div class="as-sub">DeepSeek AI · 大六壬断课 | 仅供参考</div></div>`;
+  }else{
+    // 回退：JS 规则引擎
+    const analysis=buildAnalysis(r,question);
+    for(const b of analysis){
+      const lv=b.level||'平';
+      const bc=lv==='吉'?'good':lv==='凶'?'bad':'warn';
+      const badge=lv==='吉'?'🟢 吉':lv==='凶'?'🔴 凶':'🟡 平';
+      h+=`<div class="an-block">`;
+      h+=`<div class="an-h">${b.title}<span class="an-tag ${bc}">${badge}</span></div>`;
+      if(b.sub)h+=`<div class="an-sub">${b.sub}</div>`;
+      h+=`<div class="an-p">${b.content.replace(/\n/g,'<br>')}</div>`;
+      h+='</div>';
+    }
+    const sm=analysis[analysis.length-1];
+    const sc2=sm.level==='吉'?'good':sm.level==='凶'?'bad':'warn';
+    h+=`<div class="an-summary"><div class="as-big ${sc2}">${sm.bigText||'中平之卦'}</div><div class="as-sub">晴子 · 大六壬断课 | 仅供参考</div></div>`;
   }
 
-  // 综合结论
-  const sm=analysis[analysis.length-1];
-  const sc2=sm.level==='吉'?'good':sm.level==='凶'?'bad':'warn';
-  h+=`<div class="an-summary"><div class="as-big ${sc2}">${sm.bigText||'中平之卦'}</div><div class="as-sub">晴子 · 大六壬断课 | 仅供参考</div></div>`;
   h+='</div>';
-
   $('result').innerHTML=h;
   $('result').classList.add('on');
   $('result').scrollIntoView({behavior:'smooth',block:'start'});
