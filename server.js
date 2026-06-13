@@ -29,6 +29,9 @@ app.post('/api/liuren', (req, res) => {
   }
 });
 
+// API: 健康检查
+app.get('/api/health', (req, res) => res.json({ ok: true, time: Date.now() }));
+
 // API: AI 分析
 app.post('/api/analyze', async (req, res) => {
   try {
@@ -37,7 +40,6 @@ app.post('/api/analyze', async (req, res) => {
     if (isNaN(date.getTime())) return res.status(400).json({ error: '日期时间无效' });
 
     const lr = getLiuRenByDate(date);
-    const bz = lr.dateInfo.bazi;
     const sc = lr.sanChuan;
     const gs = (lr.siKe.ke1[0]||'').charAt(0);
     const zs = (lr.siKe.ke3[0]||'').charAt(0);
@@ -46,7 +48,7 @@ app.post('/api/analyze', async (req, res) => {
 
     const promptData = {
       起课时间: lr.dateInfo.date,
-      八字: bz,
+      八字: lr.dateInfo.bazi,
       月将: lr.dateInfo.yuejiang,
       空亡: lr.dateInfo.kong,
       旬: lr.dateInfo.xun,
@@ -68,20 +70,14 @@ ${JSON.stringify(promptData, null, 2)}
 
 ${question ? `求测问题：${question}` : '综合断课'}
 
-请根据以上课盘进行专业断课，参考九宗门、三传、四课、神煞、天将等技法，给出一份完整的分析报告。
-
-要求：
-1. 先解读课体特征和核心格局
-2. 分析三传脉络（初传发端→中传过程→末传结局）
-3. 干支上神与求测问题的关联
-4. 关键神煞和天将的影响
-5. 给出综合判断和具体建议
-6. 语言简洁有力，用词专业，不要模棱两可的废话
-7. 控制在 500 字以内`;
+请根据以上课盘进行专业断课，给出完整的分析报告。要求：1.解读课体核心格局 2.分析三传脉络 3.干支与问题的关联 4.神煞天将影响 5.综合判断和建议 6.控制在500字以内，语言简洁有力。`;
 
     if (!DEEPSEEK_KEY) {
       return res.json({ content: null, fallback: true, reason: '未配置 DEEPSEEK_API_KEY' });
     }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
 
     const aiResp = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
@@ -90,21 +86,23 @@ ${question ? `求测问题：${question}` : '综合断课'}
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 1200
+        max_tokens: 1000,
+        stream: false
       }),
-      signal: AbortSignal.timeout(30000)
+      signal: controller.signal
     });
+    clearTimeout(timeout);
 
     if (!aiResp.ok) {
       const errText = await aiResp.text().catch(()=>'');
-      return res.json({ content: null, fallback: true, reason: `AI API 错误: ${aiResp.status} ${errText}` });
+      return res.json({ content: null, fallback: true, reason: `AI API ${aiResp.status}: ${errText.slice(0,100)}` });
     }
 
     const aiJson = await aiResp.json();
     const content = aiJson.choices?.[0]?.message?.content || '';
     res.json({ content, fallback: false });
   } catch (e) {
-    res.json({ content: null, fallback: true, reason: e.message });
+    res.json({ content: null, fallback: true, reason: e.message || 'AI request failed' });
   }
 });
 
