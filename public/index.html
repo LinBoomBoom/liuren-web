@@ -70,6 +70,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .an-summary .as-big.warn{color:var(--warn)}
 .an-summary .as-sub{font-size:11px;color:var(--dim)}
 
+/* ===== 求测问题 ===== */
+.qwrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border);margin-top:14px}
+.qwrap input{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border2);border-radius:7px;color:var(--text);padding:9px 14px;font-size:13px;outline:none;letter-spacing:.5px;transition:.2s;font-family:var(--font);placeholder-color:var(--dim2)}
+.qwrap input:focus{border-color:var(--gold)}
+.qwrap input::placeholder{color:var(--dim2)}
+.qcat{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.qcat .qc{background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.12);color:var(--dim);border-radius:16px;padding:4px 12px;font-size:11px;cursor:pointer;transition:.2s;letter-spacing:.5px;white-space:nowrap;user-select:none}
+.qcat .qc:hover{border-color:rgba(200,169,110,.3);color:var(--gold3)}
+.qcat .qc.on{background:rgba(200,169,110,.15);border-color:var(--gold2);color:var(--gold)}
 /* ===== Footer ===== */
 .ft{text-align:center;padding:32px 0 20px;color:var(--dim2);font-size:10px;border-top:1px solid var(--border);margin-top:4px;letter-spacing:1px}
 
@@ -102,6 +111,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="sg"><label>分</label><select id="smi"></select></div>
     <button class="btn" onclick="go()" style="margin-left:4px">起 课</button>
     <button class="btn-ghost" onclick="goNow()">此刻</button>
+  </div>
+  <div class="qwrap">
+    <input id="sq" type="text" placeholder="输入求测问题，如：问事业前程 / 问感情姻缘 / 问财运投资…" onkeydown="if(event.key==='Enter')go()">
+    <div class="qcat" id="qcat">
+      <span class="qc" onclick="pickQ('事业')">💼 事业</span>
+      <span class="qc" onclick="pickQ('财运')">💰 财运</span>
+      <span class="qc" onclick="pickQ('感情')">💕 感情</span>
+      <span class="qc" onclick="pickQ('健康')">🏥 健康</span>
+      <span class="qc" onclick="pickQ('出行')">✈️ 出行</span>
+      <span class="qc" onclick="pickQ('官讼')">⚖️ 官讼</span>
+    </div>
   </div>
 </div>
 
@@ -150,6 +170,21 @@ function getSC(h){return SC_MAP[h]||'子';}
 function wxRel(a,b){const wa=WX_M[a]||'',wb=WX_M[b]||'';if(!wa||!wb)return'';const ai=WO.indexOf(wa),bi=WO.indexOf(wb);if(ai===bi)return'比和';if((ai+2)%5===bi)return'上克下';if((bi+2)%5===ai)return'下克上';return'上生下';}
 function gwxRel(a,g){const wa=WX_M[a]||'',wb=GW_M[g]||'';if(!wa||!wb)return'';const ai=WO.indexOf(wa),bi=WO.indexOf(wb);if(ai===bi)return'比和';if((ai+2)%5===bi)return'神克干⚡';if((bi+2)%5===ai)return'干克神';return'神生干';}
 
+// ========== 分类标签 ==========
+function pickQ(tag){
+  const inp=$('sq'),cur=inp.value.trim();
+  const chips=$('qcat').querySelectorAll('.qc');
+  let active='';
+  chips.forEach(c=>{if(c.textContent.includes(tag)){c.classList.toggle('on');if(c.classList.contains('on'))active=tag;}else{c.classList.remove('on')}});
+  if(!active&&!cur){inp.value='';return}
+  if(!active){inp.value=cur;return}
+  const prefixes={事业:'问事业前程：',财运:'问财运投资：',感情:'问感情姻缘：',健康:'问身体健康：',出行:'问出行远行：',官讼:'问官讼纠纷：'};
+  const pfx=prefixes[tag]||`问${tag}：`;
+  const bare=cur.replace(/^问[^：:]*[：:]/,'').trim();
+  inp.value=pfx+(bare||'');
+  inp.focus();
+}
+
 // ========== 交互 ==========
 function goNow(){
   const n=new Date();
@@ -166,8 +201,9 @@ async function go(){
     const resp=await fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:mi})});
     const r=await resp.json();
     if(r.error){alert(r.error);return}
+    const question=$('sq').value.trim();
     showTime(r.dateInfo,y,m,d,h);
-    renderAnalysis(r);
+    renderAnalysis(r,question);
   }catch(e){alert('请求失败: '+e.message)}
   finally{$('ld').classList.remove('on')}
 }
@@ -183,12 +219,17 @@ function showTime(di,y,m,d,h){
 // ============================================================
 //  断 课 分 析 引 擎
 // ============================================================
-function buildAnalysis(r){
+function buildAnalysis(r,question){
   const bz=r.dateInfo.bazi.split(' '),riGan=bz[2][0],riZhi=bz[2][1];
   const sc=r.sanChuan,tj=r.tianDiPan.tianJiang;
   const gs=(r.siKe.ke1[0]||'').charAt(0),zs=(r.siKe.ke3[0]||'').charAt(0);
   const gJ=r.siKe.ke1[1]||'',zJ=r.siKe.ke3[1]||'';
   const blocks=[];
+
+  // 0. 问题上下文
+  if(question){
+    blocks.push(analyzeContext(question,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r.dateInfo));
+  }
 
   // 1. 课体总论
   blocks.push(analyzeKeTi(sc.keTi));
@@ -364,12 +405,42 @@ function doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r){
 }
 
 // ============================================================
+//  问题感知分析
+// ============================================================
+function analyzeContext(q,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,di){
+  const cats=[
+    {kw:['事业','工作','前程','职场','升职','跳槽','面试'],tag:'事业',good:['青龙','贵人','太常'],bad:['白虎','天空','勾陈'],liuqin:['官鬼','父母']},
+    {kw:['财运','投资','理财','赚钱','生意','收入'],tag:'财运',good:['青龙','六合','太常'],bad:['玄武','天空','白虎'],liuqin:['妻财']},
+    {kw:['感情','姻缘','恋爱','婚姻','分手','桃花','对象'],tag:'感情',good:['六合','天后','贵人'],bad:['腾蛇','玄武','白虎'],liuqin:['妻财','官鬼']},
+    {kw:['健康','身体','疾病','病','医','手术'],tag:'健康',good:['太常','青龙'],bad:['白虎','腾蛇'],liuqin:['子孙']},
+    {kw:['出行','远行','旅游','出差','移','迁'],tag:'出行',good:['青龙','六合','贵人'],bad:['白虎','腾蛇'],liuqin:[]},
+    {kw:['官讼','诉讼','官司','纠纷','法律','仲裁'],tag:'官讼',good:['贵人','青龙'],bad:['白虎','天空','勾陈'],liuqin:['官鬼']}];
+  let cat=null;
+  for(const c of cats){for(const kw of c.kw){if(q.includes(kw)){cat=c;break}}if(cat)break}
+  let c='',level='平';
+  const hasGoodJ=[gJ,zJ,sc.chuChuan[1],sc.zhongChuan[1],sc.moChuan[1]].some(j=>cat&&cat.good.includes(j));
+  const hasBadJ=[gJ,zJ,sc.chuChuan[1],sc.zhongChuan[1],sc.moChuan[1]].some(j=>cat&&cat.bad.includes(j));
+  const hasLQ=[sc.chuChuan[2],sc.zhongChuan[2],sc.moChuan[2]].some(l=>cat&&cat.liuqin.includes(l));
+  if(!cat){c=`求测问题：<em>${q}</em>。建议选择具体方向（事业/财运/感情等），以获取更精准解读。以下为全课综合分析。`}
+  else{
+    if(cat.tag==='事业'){if(hasLQ&&hasGoodJ)c+=`<em>事业运较佳</em>。官鬼/父母与吉将同现，职场升迁、考试文书皆有助力，宜主动出击。`;else if(hasBadJ)c+=`<em>事业有阻力</em>。白虎/勾陈显现，或遇小人、或压力大，宜守不宜攻。`;else c+=`事业运<em>中平</em>。按部就班即可，不宜有大动作。`}
+    else if(cat.tag==='财运'){if(hasLQ&&hasGoodJ)c+=`<em>财运亨通</em>。妻财得青龙/六合之助，求财有利，投资可期。`;else if(hasBadJ)c+=`<em>财运有损</em>。玄武/天空显现，防盗贼失财，不宜投机。`;else c+=`财运<em>中平</em>。小财可得，大财须待时机。`}
+    else if(cat.tag==='感情'){if(hasLQ&&hasGoodJ)c+=`<em>感情运佳</em>。六合/天后显现，单身易遇良缘，有伴感情和睦。`;else if(hasBadJ)c+=`<em>感情有波折</em>。腾蛇/玄武显现，防口舌误会或小人插足。`;else c+=`感情运<em>中平</em>。稳定为主，新缘须待。`}
+    else if(cat.tag==='健康'){if(hasBadJ)c+=`<em>健康须注意</em>。白虎/腾蛇显现，防外伤急症、心神不宁。`;else if(hasGoodJ)c+=`<em>健康无大碍</em>。吉将照临，注意日常保养即可。`;else c+=`健康<em>中平</em>。偶有小恙，无大妨碍。`}
+    else if(cat.tag==='出行'){if(hasGoodJ&&!hasBadJ)c+=`<em>出行顺利</em>。吉将护佑，远行得利。`;else if(hasBadJ)c+=`<em>出行宜慎重</em>。凶将显现，防意外阻滞。`;else c+=`出行<em>中平</em>。近行可，远行需谨慎。`}
+    else if(cat.tag==='官讼'){if(hasGoodJ)c+=`<em>官讼有利</em>。贵人青龙在位，有理可伸。`;else if(hasBadJ)c+=`<em>官讼不利</em>。白虎勾陈临位，宜和解。`;else c+=`官讼<em>中平</em>。宜寻求调解。`}
+    if(hasGoodJ&&!hasBadJ)level='吉';else if(hasBadJ&&!hasGoodJ)level='凶';else level='平';
+  }
+  return {title:'所求之事',sub:cat?cat.tag:'综合',content:`求测方向：<em>${cat?cat.tag:'综合'}</em>。${c}`,level:level};
+}
+
+// ============================================================
 //  渲 染（仅保留分析报告）
 // ============================================================
-function renderAnalysis(r){
+function renderAnalysis(r,question){
   const bz=r.dateInfo.bazi.split(' '),riGan=bz[2][0],riZhi=bz[2][1];
-  const sc=r.sanChuan,tj=r.tianDiPan.tianJiang;
-  const analysis=buildAnalysis(r);
+  const sc=r.sanChuan;
+  const analysis=buildAnalysis(r,question);
   let h='';
 
   // 信息条
