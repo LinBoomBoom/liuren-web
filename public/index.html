@@ -248,7 +248,7 @@ function buildAnalysis(r,question){
   // 5. 神煞点睛
   blocks.push(analyzeShenSha(r.shenSha,riGan,riZhi,gs,zs));
   // 6. 综合断语
-  blocks.push(doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r));
+  blocks.push(doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r,question));
 
   return blocks;
 }
@@ -380,7 +380,7 @@ function analyzeShenSha(ss,riGan,riZhi,gs,zs){
   return {title:'五、神煞提要',sub:`${gGood.length}吉 · ${gBad.length}凶`,content:c,level:level};
 }
 
-function doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r){
+function doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r,question){
   const lv=blocks.map(b=>b.level);
   const gc=lv.filter(l=>l==='吉').length,bc=lv.filter(l=>l==='凶').length;
   let level='平',big='中平之卦';
@@ -389,17 +389,18 @@ function doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r){
   else if(gc>bc){level='吉';big='偏吉之卦';}
   else if(bc>gc){level='凶';big='偏凶之卦';}
 
+  const ctx=question?`针对所问之事，`:'';
   let c='';
   if(level==='吉'){
-    c='纵观全课，气运亨通，<em>百事可谋</em>。天地人和，贵人相助，时机成熟，宜主动进取。';
+    c=`${ctx}纵观全课，气运亨通，<em>百事可谋</em>。天地人和，贵人相助，时机成熟，宜主动进取。`;
     if(gJ==='贵人')c+='尤以干上见贵人为最吉之兆，遇事有贵人相扶，无需过虑。';
     if(sc.keTi==='元首')c+='元首课配合吉将，大有可为，宜抢占先机。';
   }else if(level==='凶'){
-    c='纵观全课，气运阻滞，<em>宜守不宜攻</em>。多有凶煞并临，事须谨慎，不可冒进。';
+    c=`${ctx}纵观全课，气运阻滞，<em>宜守不宜攻</em>。多有凶煞并临，事须谨慎，不可冒进。`;
     if(sc.keTi==='昴星'||sc.keTi==='伏吟'||sc.keTi==='反吟')c+=`${sc.keTi}课本为滞涩之象，更需耐心待时。`;
     c+='建议：大事缓办，小事速决，避免重大决策。待气运转好再行大事。';
   }else{
-    c='纵观全课，<em>吉凶互见</em>，事有起伏。利小不利大，利缓不利急。';
+    c=`${ctx}纵观全课，<em>吉凶互见</em>，事有起伏。利小不利大，利缓不利急。`;
     c+='建议：小事可成，大事须谋定后动。把握吉神所在之时机，避开凶煞当令之方位。';
   }
 
@@ -423,21 +424,26 @@ function analyzeContext(q,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,di){
     {kw:['官讼','诉讼','官司','纠纷','法律','仲裁'],tag:'官讼',good:['贵人','青龙'],bad:['白虎','天空','勾陈'],liuqin:['官鬼']}];
   let cat=null;
   for(const c of cats){for(const kw of c.kw){if(q.includes(kw)){cat=c;break}}if(cat)break}
+  // 提取具体问题（去掉前缀）
+  const bare=q.replace(/^问[^：:]*[：:]\s*/,'').trim()||q;
   let c='',level='平';
   const hasGoodJ=[gJ,zJ,sc.chuChuan[1],sc.zhongChuan[1],sc.moChuan[1]].some(j=>cat&&cat.good.includes(j));
   const hasBadJ=[gJ,zJ,sc.chuChuan[1],sc.zhongChuan[1],sc.moChuan[1]].some(j=>cat&&cat.bad.includes(j));
   const hasLQ=[sc.chuChuan[2],sc.zhongChuan[2],sc.moChuan[2]].some(l=>cat&&cat.liuqin.includes(l));
-  if(!cat){c=`求测问题：<em>${q}</em>。建议选择具体方向（事业/财运/感情等），以获取更精准解读。以下为全课综合分析。`}
-  else{
-    if(cat.tag==='事业'){if(hasLQ&&hasGoodJ)c+=`<em>事业运较佳</em>。官鬼/父母与吉将同现，职场升迁、考试文书皆有助力，宜主动出击。`;else if(hasBadJ)c+=`<em>事业有阻力</em>。白虎/勾陈显现，或遇小人、或压力大，宜守不宜攻。`;else c+=`事业运<em>中平</em>。按部就班即可，不宜有大动作。`}
-    else if(cat.tag==='财运'){if(hasLQ&&hasGoodJ)c+=`<em>财运亨通</em>。妻财得青龙/六合之助，求财有利，投资可期。`;else if(hasBadJ)c+=`<em>财运有损</em>。玄武/天空显现，防盗贼失财，不宜投机。`;else c+=`财运<em>中平</em>。小财可得，大财须待时机。`}
-    else if(cat.tag==='感情'){if(hasLQ&&hasGoodJ)c+=`<em>感情运佳</em>。六合/天后显现，单身易遇良缘，有伴感情和睦。`;else if(hasBadJ)c+=`<em>感情有波折</em>。腾蛇/玄武显现，防口舌误会或小人插足。`;else c+=`感情运<em>中平</em>。稳定为主，新缘须待。`}
-    else if(cat.tag==='健康'){if(hasBadJ)c+=`<em>健康须注意</em>。白虎/腾蛇显现，防外伤急症、心神不宁。`;else if(hasGoodJ)c+=`<em>健康无大碍</em>。吉将照临，注意日常保养即可。`;else c+=`健康<em>中平</em>。偶有小恙，无大妨碍。`}
-    else if(cat.tag==='出行'){if(hasGoodJ&&!hasBadJ)c+=`<em>出行顺利</em>。吉将护佑，远行得利。`;else if(hasBadJ)c+=`<em>出行宜慎重</em>。凶将显现，防意外阻滞。`;else c+=`出行<em>中平</em>。近行可，远行需谨慎。`}
-    else if(cat.tag==='官讼'){if(hasGoodJ)c+=`<em>官讼有利</em>。贵人青龙在位，有理可伸。`;else if(hasBadJ)c+=`<em>官讼不利</em>。白虎勾陈临位，宜和解。`;else c+=`官讼<em>中平</em>。宜寻求调解。`}
+  if(!cat){
+    c=`您所问：<em>${q}</em>。未能识别具体求测方向，建议选择事业/财运/感情等分类，以获取更精准解读。以下为该时辰全课综合分析。`;
+  }else{
+    // 开头直接引用用户问题
+    c=`您所问：<em>${bare}</em>。针对<em>${cat.tag}</em>方向，课象分析如下：`;
+    if(cat.tag==='事业'){if(hasLQ&&hasGoodJ)c+=`官鬼/父母与吉将同现，<em>事业运较佳</em>。职场升迁、考试文书皆有助力，宜主动出击。`;else if(hasBadJ)c+=`白虎/勾陈显现，<em>事业有阻力</em>。或遇小人、或压力大，宜守不宜攻。`;else c+=`事业运<em>中平</em>。按部就班即可，不宜有大动作。`}
+    else if(cat.tag==='财运'){if(hasLQ&&hasGoodJ)c+=`妻财得青龙/六合之助，<em>财运亨通</em>。求财有利，投资可期。`;else if(hasBadJ)c+=`玄武/天空显现，<em>财运有损</em>。防盗贼失财，不宜投机。`;else c+=`财运<em>中平</em>。小财可得，大财须待时机。`}
+    else if(cat.tag==='感情'){if(hasLQ&&hasGoodJ)c+=`六合/天后显现，<em>感情运佳</em>。单身易遇良缘，有伴感情和睦。`;else if(hasBadJ)c+=`腾蛇/玄武显现，<em>感情有波折</em>。防口舌误会或小人插足。`;else c+=`感情运<em>中平</em>。稳定为主，新缘须待。`}
+    else if(cat.tag==='健康'){if(hasBadJ)c+=`白虎/腾蛇显现，<em>健康须注意</em>。防外伤急症、心神不宁。`;else if(hasGoodJ)c+=`吉将照临，<em>健康无大碍</em>。注意日常保养即可。`;else c+=`健康<em>中平</em>。偶有小恙，无大妨碍。`}
+    else if(cat.tag==='出行'){if(hasGoodJ&&!hasBadJ)c+=`吉将护佑，<em>出行顺利</em>。远行得利。`;else if(hasBadJ)c+=`凶将显现，<em>出行宜慎重</em>。防意外阻滞。`;else c+=`出行<em>中平</em>。近行可，远行需谨慎。`}
+    else if(cat.tag==='官讼'){if(hasGoodJ)c+=`贵人青龙在位，<em>官讼有利</em>。有理可伸。`;else if(hasBadJ)c+=`白虎勾陈临位，<em>官讼不利</em>。宜和解。`;else c+=`官讼<em>中平</em>。宜寻求调解。`}
     if(hasGoodJ&&!hasBadJ)level='吉';else if(hasBadJ&&!hasGoodJ)level='凶';else level='平';
   }
-  return {title:'所求之事',sub:cat?cat.tag:'综合',content:`求测方向：<em>${cat?cat.tag:'综合'}</em>。${c}`,level:level};
+  return {title:'所求之事',sub:cat?cat.tag:'综合',content:c,level:level};
 }
 
 // ============================================================
