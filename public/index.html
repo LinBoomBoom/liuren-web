@@ -191,27 +191,30 @@ function goNow(){
 async function go(){
   const y=+$('sy').value,m=+$('sm').value,d=+$('sd').value,h=+$('sh').value;
   if(!y||!m||!d){return}
+  // 活时法：用实际点击时刻的分钟/秒，同一天同一时辰不同问题课盘不同
+  const now=new Date();
+  const useMin=now.getMinutes(),useSec=now.getSeconds();
   $('ld').classList.add('on');$('result').classList.remove('on');
   window.scrollTo({top:0,behavior:'smooth'});
   try{
     const question=$('sq').value.trim();
     const [resp,aiResp]=await Promise.all([
-      fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:0})}),
+      fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:useMin})}),
       fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,question})})
     ]);
     const r=await resp.json();
     if(r.error){alert(r.error);return}
     const aiResult=await aiResp.json().catch(()=>({fallback:true}));
-    showTime(r.dateInfo,y,m,d,h);
+    showTime(r.dateInfo,y,m,d,h,useMin);
     renderAnalysis(r,question,aiResult);
   }catch(e){alert('请求失败: '+e.message)}
   finally{$('ld').classList.remove('on')}
 }
 
-function showTime(di,y,m,d,h){
-  const dt=new Date(y,m-1,d,h,0),sc=getSC(h);
+function showTime(di,y,m,d,h,min){
+  const dt=new Date(y,m-1,d,h,min||0),sc=getSC(h);
   $('ts').innerHTML=`
-    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:00</div>
+    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:${String(min||0).padStart(2,'0')}</div>
     <div class="td-sub">${SC_NAME[sc]} · 月将${di.yuejiang} · 旬${di.xun} · 空亡 ${di.kong.join('、')}</div>
     <div class="td-bazi">${di.bazi}</div>`;
 }
