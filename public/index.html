@@ -119,6 +119,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <span class="qc" onclick="pickQ('健康')">🏥 健康</span>
       <span class="qc" onclick="pickQ('出行')">✈️ 出行</span>
       <span class="qc" onclick="pickQ('官讼')">⚖️ 官讼</span>
+      <span class="qc" onclick="pickQ('其它')">📋 其它</span>
     </div>
   </div>
   <button class="btn btn-go" onclick="go()">🔮 开 始 断 课</button>
@@ -174,7 +175,7 @@ function pickQ(tag){
   chips.forEach(c=>{if(c.textContent.includes(tag)){c.classList.toggle('on');if(c.classList.contains('on'))active=tag;}else{c.classList.remove('on')}});
   if(!active&&!cur){inp.value='';return}
   if(!active){inp.value=cur;return}
-  const prefixes={事业:'问事业前程：',财运:'问财运投资：',感情:'问感情姻缘：',健康:'问身体健康：',出行:'问出行远行：',官讼:'问官讼纠纷：'};
+  const prefixes={事业:'问事业前程：',财运:'问财运投资：',感情:'问感情姻缘：',健康:'问身体健康：',出行:'问出行远行：',官讼:'问官讼纠纷：',其它:'问：'};
   const pfx=prefixes[tag]||`问${tag}：`;
   const bare=cur.replace(/^问[^：:]*[：:]/,'').trim();
   inp.value=pfx+(bare||'');
@@ -184,9 +185,10 @@ function pickQ(tag){
 // ========== 显示时间（无API） ==========
 function refreshDisplay(){
   const y=+$('sy').value,m=+$('sm').value,d=+$('sd').value,h=+$('sh').value;
-  const sc=getSC(h),dt=new Date(y,m-1,d,h);
+  const now=new Date(),sc=getSC(h),dt=new Date(y,m-1,d,h);
+  const showMin=(y===now.getFullYear()&&m===now.getMonth()+1&&d===now.getDate()&&h===now.getHours())?now.getMinutes():'—';
   $('ts').innerHTML=`
-    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:—</div>
+    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:${typeof showMin==='number'?String(showMin).padStart(2,'0'):showMin}</div>
     <div class="td-sub">${SC_NAME[sc]} · 选择问题后点击下方按钮起课</div>`;
 }
 
