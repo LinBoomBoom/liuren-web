@@ -109,7 +109,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="sg"><label>日</label><select id="sd"></select></div>
     <div class="sg split" style="padding-top:20px">·</div>
     <div class="sg"><label>时</label><select id="sh"></select></div>
-    <div class="sg"><label>分</label><select id="smi"></select></div>
     <button class="btn-ghost" onclick="goNow()">此刻</button>
   </div>
   <div class="qwrap">
@@ -147,62 +146,19 @@ const BAD_J=['白虎','腾蛇','玄武'];
 
 // ========== 选择器初始化 ==========
 function initSelects(){
-  const now=new Date(),cy=now.getFullYear(),cm=now.getMonth()+1,cd=now.getDate(),ch=now.getHours(),cmi=now.getMinutes();
-  // 年：当前-10 ~ 当前（不能超前）
-  let yOpt='';for(let i=cy-10;i<=cy;i++)yOpt+=`<option value="${i}"${i===cy?' selected':''}>${i}</option>`;
+  const now=new Date(),cy=now.getFullYear();
+  // 年：当前-10 ~ 当前+2（允许超前两年预测）
+  let yOpt='';for(let i=cy-10;i<=cy+2;i++)yOpt+=`<option value="${i}"${i===cy?' selected':''}>${i}</option>`;
   $('sy').innerHTML=yOpt;
-  // 月
-  updateMonths(cm);
-  // 日
-  updateDays(cd);
-  // 时
-  updateHours(ch);
-  // 分
-  updateMinutes(cmi);
-  // 联动监听
-  $('sy').onchange=()=>{updateMonths();updateDays();updateHours();updateMinutes();};
-  $('sm').onchange=()=>{updateDays();updateHours();updateMinutes();};
-  $('sd').onchange=()=>{updateHours();updateMinutes();};
-  $('sh').onchange=()=>{updateMinutes();};
-}
-function isFuture(y,m,d,h,mi){
-  const now=new Date();
-  const sel=new Date(y,m-1,d,h,mi||0);
-  return sel>now;
-}
-function getMaxMonth(){return +$('sy').value===new Date().getFullYear()?new Date().getMonth()+1:12;}
-function getMaxDay(){
-  const y=+$('sy').value,m=+$('sm').value;
-  const days=[31,(y%4===0&&y%100!==0)||y%400===0?29:28,31,30,31,30,31,31,30,31,30,31];
-  const md=days[m-1];
-  if(y===new Date().getFullYear()&&m===new Date().getMonth()+1)return Math.min(md,new Date().getDate());
-  return md;
-}
-function getMaxHour(){return isFuture(+$('sy').value,+$('sm').value,+$('sd').value,0,0)?-1:isFuture(+$('sy').value,+$('sm').value,+$('sd').value,23,59)?new Date().getHours():23;}
-function getMaxMinute(){
-  if(!isFuture(+$('sy').value,+$('sm').value,+$('sd').value,+$('sh').value,0))return 59;
-  return new Date().getMinutes();
-}
-function updateMonths(def){
-  const max=getMaxMonth(),cur=def||+$('sm').value||1;
-  let o='';for(let i=1;i<=max;i++)o+=`<option value="${i}"${i===Math.min(cur,max)?' selected':''}>${i}</option>`;
-  $('sm').innerHTML=o;
-}
-function updateDays(def){
-  const max=getMaxDay(),cur=def||+$('sd').value||1;
-  let o='';for(let i=1;i<=max;i++)o+=`<option value="${i}"${i===Math.min(cur,max)?' selected':''}>${i}</option>`;
-  $('sd').innerHTML=o;
-}
-function updateHours(def){
-  const max=getMaxHour(),cur=def!==undefined?def:+$('sh').value||0;
-  if(max<0){$('sh').innerHTML='<option value="0">00</option>';return;}
-  let o='';for(let i=0;i<=max;i++)o+=`<option value="${i}"${i===Math.min(cur,max)?' selected':''}>${String(i).padStart(2,'0')}</option>`;
-  $('sh').innerHTML=o;
-}
-function updateMinutes(def){
-  const max=getMaxMinute(),cur=def!==undefined?def:+$('smi').value||0;
-  let o='';for(let i=0;i<=max;i++)o+=`<option value="${i}"${i===Math.min(cur,max)?' selected':''}>${String(i).padStart(2,'0')}</option>`;
-  $('smi').innerHTML=o;
+  // 月：1-12 无限制
+  let mOpt='';for(let i=1;i<=12;i++)mOpt+=`<option value="${i}"${i===now.getMonth()+1?' selected':''}>${i}</option>`;
+  $('sm').innerHTML=mOpt;
+  // 日：1-31 无限制
+  let dOpt='';for(let i=1;i<=31;i++)dOpt+=`<option value="${i}"${i===now.getDate()?' selected':''}>${i}</option>`;
+  $('sd').innerHTML=dOpt;
+  // 时：0-23 无限制
+  let hOpt='';for(let i=0;i<=23;i++)hOpt+=`<option value="${i}"${i===now.getHours()?' selected':''}>${String(i).padStart(2,'0')}</option>`;
+  $('sh').innerHTML=hOpt;
 }
 
 // ========== 辅助函数 ==========
@@ -229,20 +185,17 @@ function pickQ(tag){
 // ========== 交互 ==========
 function goNow(){
   const n=new Date();
-  $('sy').value=n.getFullYear();
-  updateMonths(n.getMonth()+1);
-  updateDays(n.getDate());
-  updateHours(n.getHours());
-  updateMinutes(n.getMinutes());
+  $('sy').value=n.getFullYear();$('sm').value=n.getMonth()+1;$('sd').value=n.getDate();
+  $('sh').value=n.getHours();
   showCurrentTime();
 }
 async function go(){
-  const y=+$('sy').value,m=+$('sm').value,d=+$('sd').value,h=+$('sh').value,mi=+$('smi').value;
+  const y=+$('sy').value,m=+$('sm').value,d=+$('sd').value,h=+$('sh').value;
   if(!y||!m||!d){return}
   $('ld').classList.add('on');$('result').classList.remove('on');
   window.scrollTo({top:0,behavior:'smooth'});
   try{
-    const resp=await fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:mi})});
+    const resp=await fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:0})});
     const r=await resp.json();
     if(r.error){alert(r.error);return}
     const question=$('sq').value.trim();
@@ -255,17 +208,17 @@ async function go(){
 function showTime(di,y,m,d,h){
   const dt=new Date(y,m-1,d,h,0),sc=getSC(h);
   $('ts').innerHTML=`
-    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:${String($('smi').value).padStart(2,'0')}</div>
+    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:00</div>
     <div class="td-sub">${SC_NAME[sc]} · 月将${di.yuejiang} · 旬${di.xun} · 空亡 ${di.kong.join('、')}</div>
     <div class="td-bazi">${di.bazi}</div>`;
 }
 
 function showCurrentTime(){
   const n=new Date();
-  const y=n.getFullYear(),m=n.getMonth()+1,d=n.getDate(),h=n.getHours(),mi=n.getMinutes();
+  const y=n.getFullYear(),m=n.getMonth()+1,d=n.getDate(),h=n.getHours();
   const dt=new Date(y,m-1,d,h,0),sc=getSC(h);
   $('ts').innerHTML=`
-    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}</div>
+    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:00</div>
     <div class="td-sub">${SC_NAME[sc]} · 请选择时间后起课</div>
     <div class="td-bazi">—</div>`;
 }
