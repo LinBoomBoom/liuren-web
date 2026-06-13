@@ -181,12 +181,31 @@ function pickQ(tag){
   inp.focus();
 }
 
+// ========== 显示时间（无API） ==========
+function refreshDisplay(){
+  const y=+$('sy').value,m=+$('sm').value,d=+$('sd').value,h=+$('sh').value;
+  const sc=getSC(h),dt=new Date(y,m-1,d,h);
+  $('ts').innerHTML=`
+    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:—</div>
+    <div class="td-sub">${SC_NAME[sc]} · 选择问题后点击下方按钮起课</div>`;
+}
+
+// ========== 显示分析结果时间 ==========
+function showTime(di,y,m,d,h,min){
+  const dt=new Date(y,m-1,d,h,min||0),sc=getSC(h);
+  $('ts').innerHTML=`
+    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:${String(min||0).padStart(2,'0')}</div>
+    <div class="td-sub">${SC_NAME[sc]} · 月将${di.yuejiang} · 旬${di.xun} · 空亡 ${di.kong.join('、')}</div>
+    <div class="td-bazi">${di.bazi}</div>`;
+}
+
 // ========== 交互 ==========
+let _lastAnalysisTime=0;
 function goNow(){
   const n=new Date();
   $('sy').value=n.getFullYear();$('sm').value=n.getMonth()+1;$('sd').value=n.getDate();
   $('sh').value=n.getHours();
-  showCurrentTime();
+  refreshDisplay();
 }
 async function go(){
   const y=+$('sy').value,m=+$('sm').value,d=+$('sd').value,h=+$('sh').value;
@@ -206,27 +225,10 @@ async function go(){
     if(r.error){alert(r.error);return}
     const aiResult=await aiResp.json().catch(()=>({fallback:true}));
     showTime(r.dateInfo,y,m,d,h,useMin);
+    _lastAnalysisTime=Date.now();
     renderAnalysis(r,question,aiResult);
   }catch(e){alert('请求失败: '+e.message)}
   finally{$('ld').classList.remove('on')}
-}
-
-function showTime(di,y,m,d,h,min){
-  const dt=new Date(y,m-1,d,h,min||0),sc=getSC(h);
-  $('ts').innerHTML=`
-    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:${String(min||0).padStart(2,'0')}</div>
-    <div class="td-sub">${SC_NAME[sc]} · 月将${di.yuejiang} · 旬${di.xun} · 空亡 ${di.kong.join('、')}</div>
-    <div class="td-bazi">${di.bazi}</div>`;
-}
-
-function showCurrentTime(){
-  const n=new Date();
-  const y=n.getFullYear(),m=n.getMonth()+1,d=n.getDate(),h=n.getHours();
-  const dt=new Date(y,m-1,d,h,0),sc=getSC(h);
-  $('ts').innerHTML=`
-    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WD[dt.getDay()]} ${String(h).padStart(2,'0')}:00</div>
-    <div class="td-sub">${SC_NAME[sc]} · 请选择时间后起课</div>
-    <div class="td-bazi">—</div>`;
 }
 
 // ============================================================
@@ -511,9 +513,20 @@ function renderAnalysis(r,question,aiResult){
   $('result').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+function showCurrentTime(){
+  const n=new Date();
+  $('sy').value=n.getFullYear();$('sm').value=n.getMonth()+1;$('sd').value=n.getDate();
+  $('sh').value=n.getHours();
+  refreshDisplay();
+}
+
 // ========== 启动 ==========
 initSelects();
 showCurrentTime();
+// 选择器改变时刷新显示
+['sy','sm','sd','sh'].forEach(id=>$(id).addEventListener('change',refreshDisplay));
+// 每30秒自动刷新时间（仅在未做过分析时，避免覆盖结果）
+setInterval(()=>{if(Date.now()-_lastAnalysisTime>120000)showCurrentTime();},30000);
 </script>
 </body>
 </html>
