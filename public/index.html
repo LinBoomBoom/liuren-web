@@ -469,7 +469,7 @@ function renderAnalysis(r,question,aiResult){
 
   // 判断用 AI 还是规则引擎
   const useAI = aiResult && !aiResult.fallback && aiResult.content;
-  const aiLabel = useAI ? '🤖 AI 深度解读' : '📋 规则断课报告';
+  const aiLabel = useAI ? '📋 断课分析报告' : '📋 规则断课报告';
   const aiSub = useAI ? '' : (aiResult?.reason ? `（AI 不可用：${aiResult.reason}，使用本地规则引擎）` : '');
 
   h+=`<div class="an-card"><div class="an-title">${aiLabel}</div>`;
@@ -483,7 +483,7 @@ function renderAnalysis(r,question,aiResult){
       .replace(/\n\n/g,'</p><p class="an-p">')
       .replace(/\n/g,'<br>');
     h+=`<div class="an-p"><p class="an-p">${aiHtml}</p></div>`;
-    h+=`<div class="an-summary"><div class="as-sub">DeepSeek AI · 大六壬断课 | 仅供参考</div></div>`;
+    h+=`</div>`;
   }else{
     // 回退：JS 规则引擎
     const analysis=buildAnalysis(r,question);

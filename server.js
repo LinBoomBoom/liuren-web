@@ -63,14 +63,13 @@ app.post('/api/analyze', async (req, res) => {
       关键神煞: lr.shenSha.filter(s=>['日德','日禄','天德','月德','天喜','劫煞','亡神','破碎','岁破','驿马'].includes(s.name)).map(s=>`${s.name}在${s.value}`)
     };
 
-    const prompt = `你是大六壬断课专家，精通《大六壬指南》《大六壬大全》《毕法赋》。
+    const prompt = `你是大六壬断课专家。请根据以下课盘数据直接给出专业断课分析，不要自我介绍，不要"我将为您分析"之类开场白。
 
-以下是一课大六壬的完整排盘数据：
 ${JSON.stringify(promptData, null, 2)}
 
 ${question ? `求测问题：${question}` : '综合断课'}
 
-请根据以上课盘进行专业断课，给出完整的分析报告。要求：1.解读课体核心格局 2.分析三传脉络 3.干支与问题的关联 4.神煞天将影响 5.综合判断和建议 6.控制在500字以内，语言简洁有力。`;
+要求：1.直接解读课体核心格局 2.分析三传脉络 3.干支与问题的关联 4.神煞天将影响 5.综合判断和建议 6.500字以内，简洁有力。`;
 
     if (!DEEPSEEK_KEY) {
       return res.json({ content: null, fallback: true, reason: '未配置 DEEPSEEK_API_KEY' });
