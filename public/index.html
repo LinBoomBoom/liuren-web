@@ -5,417 +5,584 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>大六壬 · 在线排盘</title>
 <style>
-:root {
-  --bg:#0a0e14; --card:#11161f; --card2:#161c27;
-  --border:#1a2433; --border2:#212d3d;
-  --gold:#c8a96e; --gold2:#a08048; --gold-lt:#e8d5b0;
-  --text:#c4ccd6; --dim:#6f7682; --red:#e06060;
-  --green:#5cb888; --blue:#68a0d8; --purple:#a888d8;
-  --warn:#d4a840; --cyan:#58b8b0;
-  --wood:#7ec87e; --fire:#e87060; --earth:#d8a858;
-  --metal:#d4c870; --water:#60a0d8;
-  --font:'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;
-}
+:root{--bg:#080c12;--card:#0e141f;--card2:#131b28;--border:#1a2636;--border2:#233045;--gold:#c8a96e;--gold2:#a08048;--gold3:#e0cba0;--text:#c8d0d8;--dim:#687080;--dim2:#485060;--red:#e06060;--green:#5cb888;--blue:#68a0d8;--purple:#a888d8;--warn:#d4a840;--cyan:#58b8b0;--tags:#2a364a;--font:'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;line-height:1.6}
-.container{max-width:760px;margin:0 auto;padding:16px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;line-height:1.7}
+.container{max-width:720px;margin:0 auto;padding:0 16px 40px}
 
 /* Header */
-.header{text-align:center;padding:28px 0 16px;border-bottom:1px solid var(--border);margin-bottom:20px}
-.header h1{font-size:26px;color:var(--gold);letter-spacing:3px;font-weight:700}
-.header p{font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:1px}
+.hd{text-align:center;padding:36px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.hd h1{font-size:28px;color:var(--gold);letter-spacing:4px;font-weight:700;margin-bottom:6px}
+.hd .sub{font-size:13px;color:var(--dim);letter-spacing:2px}
 
-/* Card */
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px}
-.card-title{font-size:13px;color:var(--gold-lt);margin-bottom:14px;letter-spacing:2px;font-weight:600;display:flex;align-items:center;gap:8px}
-.card-title::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:1.5px;flex-shrink:0}
-
-/* Input */
-.input-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
-.ig{display:flex;flex-direction:column;gap:3px}
-.ig label{font-size:10px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase}
-.ig input{background:var(--bg);border:1px solid var(--border2);border-radius:7px;color:var(--text);padding:8px 10px;font-size:14px;outline:none;width:64px;text-align:center;transition:border-color .2s}
-.ig input:focus{border-color:var(--gold)}
-.btn{background:linear-gradient(135deg,#c8a96e,#9a7840);color:#fff;border:none;border-radius:7px;padding:9px 22px;font-size:13px;cursor:pointer;letter-spacing:1px;font-weight:600;transition:opacity .2s;height:38px}
+/* Time Card */
+.time-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+.time-card .tc-title{font-size:12px;color:var(--dim);letter-spacing:2px;margin-bottom:16px;text-align:center}
+.time-display{text-align:center}
+.time-display .td-main{font-size:32px;color:var(--gold3);font-weight:200;letter-spacing:2px;margin-bottom:4px}
+.time-display .td-cn{font-size:14px;color:var(--dim2);margin-bottom:8px}
+.time-display .td-bazi{font-size:16px;color:var(--gold);letter-spacing:3px;font-weight:600}
+.time-input{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:flex-end;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+.time-input .ig{display:flex;flex-direction:column;align-items:center;gap:3px}
+.time-input .ig label{font-size:9px;color:var(--dim2);letter-spacing:.5px}
+.time-input .ig input{background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:7px 8px;font-size:14px;outline:none;width:52px;text-align:center;transition:.2s}
+.time-input .ig input:focus{border-color:var(--gold)}
+.time-input .sep{color:var(--dim2);font-size:13px;padding-bottom:8px}
+.btn{background:linear-gradient(135deg,#c8a96e,#9a7840);color:#fff;border:none;border-radius:7px;padding:9px 22px;font-size:13px;cursor:pointer;letter-spacing:1px;font-weight:600;height:38px;transition:opacity .2s}
 .btn:hover{opacity:.88}
-.btn-ghost{background:transparent;border:1px solid var(--gold2);color:var(--gold);padding:8px 16px;font-size:12px}
-.loading{text-align:center;padding:40px;display:none}
-.loading.on{display:block}
-.spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* Result */
+.btn-ghost{background:transparent;border:1px solid var(--gold2);color:var(--gold);padding:8px 16px;font-size:12px;letter-spacing:1px}
+.ld{text-align:center;padding:40px;display:none}
+.ld.on{display:block}
+.spin{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ld-text{color:var(--dim);font-size:13px;letter-spacing:1px}
 #result{display:none}
 #result.on{display:block}
 
-/* Info bar */
-.info-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.itag{background:rgba(200,169,110,.07);border:1px solid rgba(200,169,110,.15);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--gold-lt)}
-.itag b{color:var(--gold);font-weight:600}
+/* Section Card */
+.sec{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:14px}
+.sec-title{font-size:13px;color:var(--gold);margin-bottom:16px;letter-spacing:2px;font-weight:600;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:1.5px;flex-shrink:0}
+
+/* Info Bar */
+.ibar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.it{background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.12);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--gold3)}
+.it b{color:var(--gold);font-weight:600}
 
 /* 天地盘 */
-.pan-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:3px;margin-bottom:8px}
-.pan-grid.center-row{grid-template-columns:1fr 2fr 1fr}
-.pan-cell{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:10px 4px;text-align:center;min-height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
-.pan-cell .tp{font-size:22px;color:var(--gold);font-weight:700;line-height:1.2}
-.pan-cell .tj{font-size:11px;color:var(--dim);margin-top:2px;line-height:1.2}
-.pan-cell .dg{font-size:9px;color:var(--purple);margin-top:1px}
-.pan-cell .dp{font-size:10px;color:var(--dim);position:absolute;bottom:3px;right:6px}
-.pan-cell .jc{font-size:9px;color:var(--blue);position:absolute;top:3px;left:6px}
-.pan-cell.has-jc .tp{margin-top:4px}
-.pan-center{display:flex;align-items:center;justify-content:center;background:var(--card2);border-radius:8px;border:1px solid var(--border2);text-align:center;flex-direction:column;gap:2px}
-.pan-center .label{font-size:11px;color:var(--dim)}
-.pan-center .val{font-size:15px;color:var(--gold-lt);font-weight:600}
-.pan-center .sub{font-size:11px;color:var(--dim)}
-@media(max-width:480px){.pan-cell{padding:8px 2px;min-height:64px}.pan-cell .tp{font-size:18px}}
+.pg{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:3px}
+.pg.cr{grid-template-columns:1fr 1.8fr 1fr}
+.pc{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:10px 4px;text-align:center;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.pc .tp{font-size:24px;color:var(--gold);font-weight:700;line-height:1.15}
+.pc .tj{font-size:11px;color:var(--dim);margin-top:2px}
+.pc .dun{font-size:9px;color:var(--purple);margin-top:1px}
+.pc .jc{font-size:9px;color:var(--blue);position:absolute;top:3px;left:6px}
+.pc .dp{font-size:10px;color:var(--dim2);position:absolute;bottom:3px;right:6px}
+.pc.grp .tp{color:#ffe090}
+.pc.grp .tj{color:#ffe090}
+.pan-mid{display:flex;align-items:center;justify-content:center;background:var(--card2);border-radius:8px;border:1px solid var(--border2);text-align:center;flex-direction:column;gap:4px;padding:8px}
+.pan-mid .ml{font-size:10px;color:var(--dim2);letter-spacing:1px}
+.pan-mid .mv{font-size:16px;color:var(--gold3);font-weight:600;letter-spacing:1px}
+.pan-mid .ms{font-size:10px;color:var(--dim2)}
+.pan-mid .mh{font-size:10px;color:var(--red);margin-top:2px}
+@media(max-width:480px){.pc{min-height:66px;padding:6px 2px}.pc .tp{font-size:20px}.pan-mid .mv{font-size:14px}}
 
-/* 四课 */
-.sike-table{width:100%;border-collapse:collapse;margin-bottom:8px}
-.sike-table th{font-size:10px;color:var(--dim);padding:4px 8px;text-align:center;font-weight:500}
-.sike-table td{text-align:center;padding:8px 6px;border:1px solid var(--border2);font-size:14px;vertical-align:middle}
-.sike-table .ss{color:var(--gold);font-size:20px;font-weight:700}
-.sike-table .xj{font-size:12px;color:var(--dim)}
-.sike-table .jx{font-size:12px;color:var(--text)}
-.sike-table .rel-td{font-size:10px;color:var(--red)}
-.sike-table .rel-td.good{color:var(--green)}
+/* 四课 + 三传 合并 */
+.kt-sc{display:flex;gap:10px;align-items:stretch;margin-bottom:10px}
+.kt-sc .col{flex:1;display:flex;flex-direction:column;gap:8px}
+.kt-cell{background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:14px 8px;text-align:center}
+.kt-cell .kl{font-size:9px;color:var(--dim2);letter-spacing:1px;margin-bottom:4px}
+.kt-cell .ks{font-size:22px;color:var(--gold);font-weight:700;margin-bottom:2px}
+.kt-cell .kx{font-size:11px;color:var(--dim);margin-bottom:2px}
+.kt-cell .kr{font-size:10px;color:var(--red)}
+.kt-cell .kr.g{color:var(--green)}
+.kt-cell.first{border-color:rgba(200,169,110,.35);background:rgba(200,169,110,.04)}
+@media(max-width:600px){.kt-sc{flex-direction:column}}
 
-/* 三传 */
-.sc-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.sc-block{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:12px 8px;text-align:center;position:relative;min-width:0}
-.sc-block.init{border-color:rgba(200,169,110,.35);background:rgba(200,169,110,.04)}
-.sc-block .ph{font-size:10px;color:var(--dim);margin-bottom:2px}
-.sc-block .zhi{font-size:26px;color:var(--gold);font-weight:700;line-height:1.3}
-.sc-block .sub{font-size:11px;color:var(--text);margin-top:1px}
-.sc-block .keti-badge{position:absolute;top:-9px;right:-2px;background:var(--gold);color:#000;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap}
-.sc-arrow{font-size:18px;color:var(--gold2);flex-shrink:0}
-@media(max-width:480px){.sc-row{flex-direction:column;gap:4px}.sc-arrow{display:none}}
+/* 三传 flow */
+.sc-flow{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.sc-b{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:14px 8px;text-align:center;position:relative}
+.sc-b.first{border-color:rgba(200,169,110,.4);background:rgba(200,169,110,.04)}
+.sc-b .ph{font-size:10px;color:var(--dim2);margin-bottom:3px;letter-spacing:1px}
+.sc-b .sz{font-size:28px;color:var(--gold);font-weight:700;line-height:1.2}
+.sc-b .si{font-size:11px;color:var(--text);margin-top:2px}
+.sc-b .badge{position:absolute;top:-9px;right:-2px;background:var(--gold);color:#000;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700}
+.sc-arr{font-size:18px;color:var(--gold2);flex-shrink:0}
+@media(max-width:480px){.sc-flow{flex-direction:column;gap:4px}.sc-arr{display:none}}
 
-/* 十二天将 */
-.tj-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
-.tj-item{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:6px;text-align:center;font-size:10px;display:flex;flex-direction:column;gap:1px}
-.tj-item .dz{color:var(--dim)}
-.tj-item .nm{color:var(--gold-lt);font-size:11px;font-weight:500}
-.tj-item.gr{border-color:rgba(200,169,110,.45);background:rgba(200,169,110,.06)}
-@media(max-width:480px){.tj-grid{grid-template-columns:repeat(3,1fr)}}
+/* 天将条 */
+.tj-bar{display:flex;flex-wrap:wrap;gap:3px}
+.tj-b{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:4px 7px;font-size:10px;text-align:center;min-width:48px}
+.tj-b .dz{color:var(--dim2);font-size:9px}
+.tj-b .nm{color:var(--gold3);font-size:11px}
+.tj-b.gr{border-color:rgba(200,169,110,.5);background:rgba(200,169,110,.08)}
+.tj-b.gr .nm{color:#ffe090}
 
 /* 神煞 */
-.ss-group{margin-bottom:10px}
-.ss-group .ss-label{font-size:10px;color:var(--dim);margin-bottom:4px;letter-spacing:.5px}
-.ss-row{display:flex;flex-wrap:wrap;gap:4px}
-.ss-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.12);color:var(--gold-lt);cursor:default}
-.ss-tag.bad{background:rgba(224,96,96,.06);border-color:rgba(224,96,96,.14);color:var(--red)}
-.ss-tag .ss-v{color:var(--text);font-weight:500;margin-left:2px}
+.ss-sec{margin-bottom:8px}
+.ss-sec .ssl{font-size:10px;color:var(--dim2);margin-bottom:4px;letter-spacing:.5px}
+.ss-r{display:flex;flex-wrap:wrap;gap:3px}
+.ss-t{font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(200,169,110,.05);border:1px solid rgba(200,169,110,.1);color:var(--gold3);cursor:default}
+.ss-t.bad{background:rgba(224,96,96,.05);border-color:rgba(224,96,96,.12);color:var(--red)}
+.ss-t .ssv{color:var(--text);font-weight:500;margin-left:2px}
 
-/* 干支分析 */
-.an-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(30,40,55,.4);font-size:13px}
-.an-row:last-child{border-bottom:none}
-.an-row .L{color:var(--dim)}
-.an-row .R{font-weight:500}
-.an-row .R.g{color:var(--green)}
-.an-row .R.b{color:var(--red)}
-.an-row .R.w{color:var(--warn)}
+/* ========== 分析报告 ========== */
+.an-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:14px}
+.an-card .an-title{font-size:15px;color:var(--gold);margin-bottom:18px;letter-spacing:2px;font-weight:600;text-align:center;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.an-card .an-block{margin-bottom:18px}
+.an-card .an-block:last-child{margin-bottom:0}
+.an-block .an-h{font-size:13px;color:var(--gold3);margin-bottom:8px;font-weight:600;letter-spacing:1px;display:flex;align-items:center;gap:6px}
+.an-block .an-h .an-badge{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:500;letter-spacing:.5px}
+.an-block .an-h .an-badge.good{background:rgba(92,184,136,.15);color:var(--green)}
+.an-block .an-h .an-badge.bad{background:rgba(224,96,96,.15);color:var(--red)}
+.an-block .an-h .an-badge.warn{background:rgba(212,168,64,.15);color:var(--warn)}
+.an-block .an-p{font-size:13px;line-height:1.9;color:var(--text)}
+.an-block .an-p em{color:var(--gold3);font-style:normal;font-weight:500}
+.an-summary{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:16px 18px;margin-top:18px;text-align:center}
+.an-summary .as-big{font-size:16px;font-weight:700;letter-spacing:2px;margin-bottom:4px}
+.an-summary .as-big.good{color:var(--green)}
+.an-summary .as-big.bad{color:var(--red)}
+.an-summary .as-big.warn{color:var(--warn)}
+.an-summary .as-sub{font-size:11px;color:var(--dim)}
 
 /* Footer */
-.ft{text-align:center;padding:20px;color:var(--dim);font-size:10px;border-top:1px solid var(--border);margin-top:20px;letter-spacing:1px}
+.ft{text-align:center;padding:32px 0 20px;color:var(--dim2);font-size:10px;border-top:1px solid var(--border);margin-top:4px;letter-spacing:1px}
 </style>
 </head>
 <body>
 <div class="container">
-<div class="header">
-  <h1>🔮 大六壬 · 排盘</h1>
-  <p>天地盘 · 四课 · 三传 · 十二天将 · 课体分析</p>
-</div>
+<div class="hd"><h1>🔮 大六壬 · 在线排盘</h1><p class="sub">天地盘 · 四课 · 三传 · 课体分析 · 断课解读</p></div>
 
-<div class="card">
-  <div class="card-title">起课时间</div>
-  <div class="input-row">
+<div class="time-card">
+  <div class="tc-title">▼ 起 课 时 间</div>
+  <div class="time-display" id="td-disp">
+    <div class="td-main">—</div>
+    <div class="td-cn">—</div>
+    <div class="td-bazi">—</div>
+  </div>
+  <div class="time-input" id="td-input">
     <div class="ig"><label>年</label><input id="y" type="number" value="2026"></div>
-    <div class="ig"><label>月</label><input id="m" type="number" value="6" min="1" max="12"></div>
+    <div class="sep">/</div>
+    <div class="ig"><label>月</label><input id="mo" type="number" value="6" min="1" max="12"></div>
+    <div class="sep">/</div>
     <div class="ig"><label>日</label><input id="d" type="number" value="12" min="1" max="31"></div>
+    <div class="sep" style="margin:0 2px">·</div>
     <div class="ig"><label>时</label><input id="h" type="number" value="22" min="0" max="23"></div>
-    <div class="ig"><label>分</label><input id="min" type="number" value="30" min="0" max="59"></div>
-    <button class="btn" onclick="divine()">起 课</button>
-    <button class="btn btn-ghost" onclick="divineNow()">此刻</button>
+    <div class="sep">:</div>
+    <div class="ig"><label>分</label><input id="mi" type="number" value="30" min="0" max="59"></div>
+    <button class="btn" onclick="go()" style="margin-left:4px">起 课</button>
+    <button class="btn-ghost" onclick="goNow()">此刻</button>
   </div>
 </div>
 
-<div class="loading" id="ld"><div class="spinner"></div><div style="color:var(--dim);font-size:13px">起课中…</div></div>
+<div class="ld" id="ld"><div class="spin"></div><div class="ld-text">起课中…</div></div>
 <div id="result"></div>
-<div class="ft">晴子 · 大六壬排盘 | 基于《大六壬指南》《大六壬大全》</div>
+<div class="ft">晴子 · 大六壬预测 | 《大六壬指南》《大六壬大全》《毕法赋》</div>
 </div>
 
 <script>
-// ===== 常量 =====
-const WX_MAP={寅:'木',卯:'木',巳:'火',午:'火',申:'金',酉:'金',亥:'水',子:'水',辰:'土',戌:'土',丑:'土',未:'土'};
-const GW_MAP={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+// ========== 常量 ==========
+const WX_M={寅:'木',卯:'木',巳:'火',午:'火',申:'金',酉:'金',亥:'水',子:'水',辰:'土',戌:'土',丑:'土',未:'土'};
+const GW_M={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
 const WO=['木','火','土','金','水'];
-const JC_ORDER=['建','除','满','平','定','执','破','危','成','收','开','闭'];
 const ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-const PAN_ROW1=['巳','午','未','申'];
-const PAN_ROW2L=['辰','','','酉'];
-const PAN_ROW3L=['卯','','','戌'];
-const PAN_ROW4=['寅','丑','子','亥'];
-const JI_GONG={甲:'寅',乙:'辰',丙:'巳',丁:'未',戊:'巳',己:'未',庚:'申',辛:'戌',壬:'亥',癸:'丑'};
+const JG={甲:'寅',乙:'辰',丙:'巳',丁:'未',戊:'巳',己:'未',庚:'申',辛:'戌',壬:'亥',癸:'丑'};
+const SHI_CHEN={0:'子',1:'丑',2:'丑',3:'寅',4:'卯',5:'卯',6:'辰',7:'辰',8:'巳',9:'巳',10:'午',11:'午',12:'未',13:'未',14:'申',15:'申',16:'酉',17:'酉',18:'戌',19:'戌',20:'亥',21:'亥',22:'亥',23:'子'};
+const SHI_NAME={子:'子时 · 夜半',丑:'丑时 · 鸡鸣',寅:'寅时 · 平旦',卯:'卯时 · 日出',辰:'辰时 · 食时',巳:'巳时 · 隅中',午:'午时 · 日中',未:'未时 · 日昳',申:'申时 · 晡时',酉:'酉时 · 日入',戌:'戌时 · 黄昏',亥:'亥时 · 人定'};
+const WEEKDAY=['日','一','二','三','四','五','六'];
+const BAD_SHAS=new Set(['岁破','病符','丧门','吊客','白虎','岁墓','死气','死神','月破','四废','破碎','劫煞','亡神','天鬼','天刑','天狱','飞廉','大煞','小煞','血支','血忌','四丘','四墓','孤辰','寡宿','月厌','奸门','丧车','火鬼','游神','官符','岁刑','天贼']);
+const GOOD_J=['贵人','青龙','六合','太常','天后'];
+const BAD_J=['白虎','腾蛇','玄武','天空'];
+const PAN_R1=['巳','午','未','申'];
+const PAN_R4=['寅','丑','子','亥'];
 
-function wxRel(a,b){
-  const wa=WX_MAP[a]||'',wb=WX_MAP[b]||'';
-  if(!wa||!wb)return'';
-  const ai=WO.indexOf(wa),bi=WO.indexOf(wb);
-  if(ai===bi)return'比';
-  if((ai+1)%5===bi)return'⬆生'; // a生b
-  if((bi+1)%5===ai)return'⬇生';
-  if((ai+2)%5===bi)return'⬇克'; // a克b
-  return'⬆克';
-}
+function wxRel(a,b){const wa=WX_M[a]||'',wb=WX_M[b]||'';if(!wa||!wb)return'';const ai=WO.indexOf(wa),bi=WO.indexOf(wb);if(ai===bi)return'比和';(ai+1)%5===bi?null:null;if((ai+2)%5===bi)return'上克下';if((bi+2)%5===ai)return'下克上';(bi+1)%5===ai?null:null;return'上生下';}
+function gwxRel(a,g){const wa=WX_M[a]||'',wb=GW_M[g]||'';if(!wa||!wb)return'';const ai=WO.indexOf(wa),bi=WO.indexOf(wb);if(ai===bi)return'比和';if((ai+2)%5===bi)return'神克干⚡';if((bi+2)%5===ai)return'干克神';return'神生干'}
+function $(id){return document.getElementById(id);}
 
-function gwRel(a,b){
-  const wa=WX_MAP[a]||'',wb=GW_MAP[b]||'';
-  if(!wa||!wb)return'';
-  const ai=WO.indexOf(wa),bi=WO.indexOf(wb);
-  if(ai===bi)return'比';
-  if((ai+2)%5===bi)return'⚡克干';
-  if((bi+2)%5===ai)return'干克';
-  return'生';
-}
+// ========== 时辰计算 ==========
+function getShiChen(h){return SHI_CHEN[h]||'子';}
+function cnHour(h){const s=getShiChen(h);return `${s}时`;}
 
-// ===== 主流程 =====
-async function divine(){
-  const y=+$('y').value,m=+$('m').value,d=+$('d').value,h=+$('h').value,mi=+$('min').value;
+// ========== 页面加载 / 交互 ==========
+async function go(){
+  const y=+$('y').value, m=+$('mo').value, d=+$('d').value, h=+$('h').value, mi=+$('mi').value;
   if(!y||!m||!d){alert('请填写完整日期');return}
   $('ld').classList.add('on');$('result').classList.remove('on');
   try{
     const resp=await fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:mi})});
     const r=await resp.json();
     if(r.error){alert(r.error);return}
+    updateTimeDisplay(r.dateInfo,y,m,d,h);
     render(r);
   }catch(e){alert('请求失败: '+e.message)}
   finally{$('ld').classList.remove('on')}
 }
-
-async function divineNow(){
+async function goNow(){
   const n=new Date();
-  $('y').value=n.getFullYear();$('m').value=n.getMonth()+1;$('d').value=n.getDate();
-  $('h').value=n.getHours();$('min').value=n.getMinutes();
-  await divine();
+  $('y').value=n.getFullYear();$('mo').value=n.getMonth()+1;$('d').value=n.getDate();
+  $('h').value=n.getHours();$('mi').value=n.getMinutes();
+  await go();
+}
+function updateTimeDisplay(di,y,m,d,h){
+  const dt=new Date(y,m-1,d,h,0);
+  const sc=getShiChen(h);
+  $('td-disp').innerHTML=`
+    <div class="td-main">${y}年${String(m).padStart(2,'0')}月${String(d).padStart(2,'0')}日 星期${WEEKDAY[dt.getDay()]} ${String(h).padStart(2,'0')}:${String($('mi').value).padStart(2,'0')}</div>
+    <div class="td-cn">${SHI_NAME[sc]} · 月将${di.yuejiang} · 旬${di.xun} · 空亡 ${di.kong.join('、')}</div>
+    <div class="td-bazi">${di.bazi}</div>`;
 }
 
-function $(id){return document.getElementById(id)}
+// ============================================================
+//  断 课 分 析 引 擎
+// ============================================================
+function buildAnalysis(r){
+  const bz=r.dateInfo.bazi.split(' '),riGan=bz[2][0],riZhi=bz[2][1];
+  const sc=r.sanChuan,tj=r.tianDiPan.tianJiang;
+  const gs=(r.siKe.ke1[0]||'').charAt(0),zs=(r.siKe.ke3[0]||'').charAt(0);
+  const gJ=r.siKe.ke1[1]||'',zJ=r.siKe.ke3[1]||'';
+  const blocks=[];
 
-// ===== 渲染 =====
+  // ----- 1. 课体总论 -----
+  blocks.push(analyzeKeTi(sc.keTi));
+
+  // ----- 2. 三传详解 -----
+  blocks.push(analyzeSanChuan(sc,r.dateInfo));
+
+  // ----- 3. 干支解读 -----
+  blocks.push(analyzeGan(riGan,riZhi,gs,gJ,zs,zJ,tj,sc,r.dateInfo));
+
+  // ----- 4. 天将提要 -----
+  blocks.push(analyzeTianJiang(tj,sc));
+
+  // ----- 5. 神煞点睛 -----
+  blocks.push(analyzeShenSha(r.shenSha,riGan,riZhi,gs,zs));
+
+  // ----- 6. 综合断语 -----
+  blocks.push(doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r));
+
+  return blocks;
+}
+
+function analyzeKeTi(kt){
+  const map={
+    '元首':{t:'元首课 · 上克下',l:'吉',c:`课名<em>元首</em>，以上克下取用。天地之道，上制下为顺，此课君臣和合、上下同心。占事多主顺利，宜<em>主动出击、先发制人</em>。象曰："天地泰和，君臣会遇，万物发生"。求谋易遂，官讼得理，婚可成，病易愈。`},
+    '重审':{t:'重审课 · 下克上',l:'平',c:`课名<em>重审</em>，以下克上取用。逆局也，事须<em>三思而后行</em>，不可冒进。象曰："下情上达，事当再审"。先难后易，初有阻而后通。宜先谋定而后动，不可仓促行事。占事多主反复，须细心斟酌。`},
+    '涉害':{t:'涉害课 · 多克并存',l:'平',c:`课名<em>涉害</em>，多克并存，事体<em>复杂</em>，须细致抉择。象曰："涉深履险，事须审度"。几方牵制，非一言可决。宜冷静分析，权衡利弊后再行动。`},
+    '遥克':{t:'遥克课 · 蒿矢/弹射',l:'平',c:`课名<em>遥克</em>，克力轻而远，如蒿矢弹射，<em>力有不逮</em>。象曰："远而无力，待时后发"。所谋之事虽有机缘，但力量不足，须积蓄待时。不宜强求，当顺势而为。`},
+    '昴星':{t:'昴星课 · 虎视/冬蛇',l:'凶',c:`课名<em>昴星</em>，闭塞不通之象。虎视眈眈或冬蛇蛰伏，<em>宜守不宜攻</em>。象曰："闭门塞窦，一动不如一静"。此课多主阻滞、等侯，不宜妄动。所谋事缓，须忍耐待时。`},
+    '别责':{t:'别责课 · 借力成事',l:'平',c:`课名<em>别责</em>，借势成事之课。自身之力不足，<em>须借他人之力</em>方能成功。象曰："别求他路，借力而行"。宜与人合作，或另辟蹊径，不可单打独斗。`},
+    '八专':{t:'八专课 · 独足',l:'平',c:`课名<em>八专</em>，独足之象，事有专主，<em>不宜旁骛</em>。象曰："一足难行，专一可成"。精力集中则事成，分散则事败。宜专注一事，不可三心二意。`},
+    '反吟':{t:'反吟课 · 反复不定',l:'凶',c:`课名<em>反吟</em>，天地对冲，反复不定。来得<em>快去得快</em>，宜速决不宜拖延。象曰："反复无常，速则得利"。占出行主速返，占事主变化快。宜果断决策，优柔则失机。`},
+    '伏吟':{t:'伏吟课 · 迟滞不动',l:'凶',c:`课名<em>伏吟</em>，天地同宫，<em>迟滞不动</em>。守旧待时之象。象曰："伏而不动，守株待兔"。百事迟缓，不宜妄动。宜守不宜攻，宜静不宜动。耐心等待时机到来。`}
+  };
+  const m=map[kt]||{t:kt, l:'平', c:`课体<em>${kt}</em>，详参三传以定吉凶。`};
+  return {title:'一、课体总论',sub:m.t,content:m.c,level:m.l};
+}
+
+function analyzeSanChuan(sc,di){
+  const [cz,cj,cl,cd]=sc.chuChuan;
+  const [zz,zj,zl,zd]=sc.zhongChuan;
+  const [mz,mj,ml,md]=sc.moChuan;
+  const isCK=di.kong.includes(cz),isZK=di.kong.includes(zz),isMK=di.kong.includes(mz);
+  let c='三传者，事发之脉络也。';
+
+  // 初传
+  c+=`\n\n<em>初传${cz}</em>（${cj}·${cl}${cd?'·遁'+cd:''}${isCK?'·空亡':''}），为事发之<em>端</em>。此乃一局之机，万事由此而起。`;
+  if(isCK)c+='初传空亡，事起虚浮，开端不利，出师无名。'
+  else if(GOOD_J.includes(cj))c+='吉将临初，发端顺畅，天地人和。'
+  else if(BAD_J.includes(cj))c+='凶将临初，发端受阻，宜谨慎行事。'
+  else c+='中平之象，发端平常。'
+
+  // 中传
+  c+=`\n\n<em>中传${zz}</em>（${zj}·${zl}${zd?'·遁'+zd:''}${isZK?'·空亡':''}），为事发之<em>过程</em>。初传之延续，事之中途。`;
+  if(isZK)c+='中传空亡，中途生变，核心环节虚悬。'
+  else if(GOOD_J.includes(zj))c+='中得吉将，过程顺利，贵人相助。'
+  else if(zj==='贵人')c+='中传遇贵人，过程中有贵人扶助，宜把握机缘。'
+  else if(BAD_J.includes(zj))c+='中传凶将，过程坎坷，须有心理准备。'
+  else c+='中平过渡，事态自然发展。'
+
+  // 末传
+  c+=`\n\n<em>末传${mz}</em>（${mj}·${ml}${md?'·遁'+md:''}${isMK?'·空亡':''}），为事发之<em>结局</em>。三传之收束，事之归处。`;
+  if(isMK)c+='末传空亡，结局虛悬，不了了之。'
+  else if(GOOD_J.includes(mj))c+='末传吉将，结局美满，善始善终。'
+  else if(BAD_J.includes(mj))c+='末传凶将，结局不利，须早做准备。'
+  else if(ml==='妻财')c+='末传见财，事终有利可得。'
+  else if(ml==='官鬼')c+='末传见官鬼，终有官讼之忧，或职场压力。'
+  else if(ml==='子孙')c+='末传见子孙，终得解脱，后继有人。'
+  else if(ml==='父母')c+='末传见父母，终得庇护，文书有成。'
+  else if(ml==='兄弟')c+='末传见兄弟，终有同辈之助，或分财之象。'
+  else c+='结局平顺。'
+
+  // 六亲链
+  const chain=[cl,zl,ml].filter(Boolean).join(' → ');
+  if(chain)c+=`\n\n三传六亲链：<em>${chain}</em>。`;
+
+  // 空亡总结
+  const kongs=[isCK&&'初',isZK&&'中',isMK&&'末'].filter(Boolean);
+  if(kongs.length){c+=`\n\n⚠️ ${kongs.join('、')}传逢空亡，${kongs.length>=2?'课体虚浮，所谋之事有头无尾之象':'相应阶段虚而不实'}。`;}
+
+  let level='平';
+  if(isCK&&isMK)level='凶';
+  else if(!isCK&&!isMK&&GOOD_J.includes(mj))level='吉';
+
+  return {title:'二、三传详解',sub:`${sc.keTi} · ${cz}→${zz}→${mz}`,content:c,level:level};
+}
+
+function analyzeGan(riGan,riZhi,gs,gJ,zs,zJ,tj,sc,di){
+  const isGSK=di.kong.includes(gs),isZSK=di.kong.includes(zs);
+  let c='';
+
+  // 干上神
+  c+=`日干<em>${riGan}</em>，干上神<em>${gs}</em>（${gJ}）${isGSK?'·空亡':''}，代表<em>自身状态</em>与<em>当前处境</em>。`;
+  const gr=gwxRel(gs,riGan);
+  if(gr==='神克干⚡')c+='上神克日干，外部环境对自身形成压制，压力较大。';
+  else if(gr==='干克神')c+='日干克上神，自身有能力驾驭当前局面，但亦耗力。';
+  else if(gr==='神生干')c+='上神生日干，外部力量生助自身，气运亨通。';
+  else c+='上神与日干比和，时势与自身能力匹配。';
+
+  if(gJ==='贵人'&&!isGSK)c+=' 干上见<em>贵人</em>，天乙临身，主得贵人扶持、遇事有人相助，百事吉庆。';
+  else if(gJ==='青龙'&&!isGSK)c+=' 干上见<em>青龙</em>，财喜临门，求财得利，事业顺遂。';
+  else if(gJ==='白虎'&&!isGSK)c+=' 干上见<em>白虎</em>，血光之象，或主压力、伤病、官讼，宜小心行事。';
+  else if(gJ==='腾蛇'&&!isGSK)c+=' 干上见<em>腾蛇</em>，虚惊怪异，心神不宁，防口舌是非。';
+
+  // 支上神
+  c+=`\n\n日支<em>${riZhi}</em>，支上神<em>${zs}</em>（${zJ}）${isZSK?'·空亡':''}，代表<em>他人他事</em>与<em>所处环境</em>。`;
+  const zr=wxRel(zs,riZhi);
+  if(zr==='上克下')c+='支上神克日支，外部环境对人事不利，合作受阻。';
+  else if(zr==='下克上')c+='日支克上神，自身能驾驭环境，但须花费心力。';
+  else if(zr==='上生下')c+='上神生日支，环境对人事有利，得天时地利。';
+
+  if(zJ==='青龙'&&!isZSK)c+=' 支上见<em>青龙</em>，宅舍兴旺，家业顺遂。';
+  else if(zJ==='白虎'&&!isZSK)c+=' 支上见<em>白虎</em>，家宅不安，或有人事纷争。';
+  else if(zJ==='玄武'&&!isZSK)c+=' 支上见<em>玄武</em>，防盗贼失物，注意小人暗算。';
+
+  // 干支对比
+  c+=`\n\n干上${gs}（${gJ}）vs 支上${zs}（${zJ}）`;
+  if(gJ===zJ)c+=`，干支同将，内外一致。`;
+  else if(GOOD_J.includes(gJ)&&BAD_J.includes(zJ))c+=`，自身气运佳而环境不利，宜守不宜攻。`;
+  else if(BAD_J.includes(gJ)&&GOOD_J.includes(zJ))c+=`，自身压力大而环境有利，可借外力解困。`;
+
+  let level='平';
+  if(GOOD_J.includes(gJ)&&GOOD_J.includes(zJ))level='吉';
+  else if(BAD_J.includes(gJ)&&BAD_J.includes(zJ))level='凶';
+
+  return {title:'三、干支解读',sub:`${riGan}上${gs} · ${riZhi}上${zs}`,content:c,level:level};
+}
+
+function analyzeTianJiang(tj,sc){
+  let c='';
+  const good=[],bad=[];
+  for(const z of ZHI){
+    const name=tj[z]||'';
+    if(name==='贵人'){c+=`<em>贵人</em>治<em>${z}</em>，天乙所在，百煞退避，为全局最尊贵之神。问官得贵，问事得助。\n`;}
+    else if(name==='青龙')c+=`<em>青龙</em>在<em>${z}</em>，财喜之位，求财得利。\n`;
+    else if(name==='白虎')c+=`<em>白虎</em>在<em>${z}</em>，凶威所在，防血光官讼。\n`;
+    else if(name==='腾蛇')c+=`<em>腾蛇</em>在<em>${z}</em>，虚惊怪异，防口舌。\n`;
+  }
+
+  // 三传中的天将
+  const jInSc=[sc.chuChuan[1],sc.zhongChuan[1],sc.moChuan[1]].filter(Boolean);
+  const uniqJ=[...new Set(jInSc)];
+  if(uniqJ.length){
+    c+=`\n三传天将：${uniqJ.map(j=>'<em>'+j+'</em>').join('、')}。`;
+    const hasG=uniqJ.some(j=>GOOD_J.includes(j));
+    const hasB=uniqJ.some(j=>BAD_J.includes(j));
+    if(hasG&&!hasB)c+=' 三传皆吉将，全局气运通畅。';
+    else if(hasB&&!hasG)c+=' 三传见凶将，事须谨慎。';
+    else c+=' 吉凶交错，事有起伏。';
+  }
+
+  return {title:'四、天将点睛',sub:`贵人治${ZHI.find(z=>tj[z]==='贵人')||'?'}`,content:c||'十二天将各安其位。',level:'平'};
+}
+
+function analyzeShenSha(ss,riGan,riZhi,gs,zs){
+  let c='';
+  const good=[],bad=[];
+
+  // 关键神煞提取
+  const keyNames=['日德','日禄','天德','月德','天喜','天赦','生气','皇书','天诏','驿马','劫煞','亡神','破碎','白虎','丧门','吊客','孤辰','寡宿','四废','岁破'];
+  const found=[];
+  for(const s of ss){
+    if(keyNames.includes(s.name))found.push(s);
+    if(BAD_SHAS.has(s.name))bad.push(s);
+    else good.push(s);
+  }
+
+  // 重要吉神
+  const impGood=found.filter(s=>!BAD_SHAS.has(s.name));
+  if(impGood.length){
+    c+='吉神：';
+    c+=impGood.map(s=>`<em>${s.name}</em>在${s.value}`).join('、')+'。';
+  }
+
+  // 重要凶煞
+  const impBad=found.filter(s=>BAD_SHAS.has(s.name));
+  if(impBad.length){
+    if(c)c+='\n';
+    c+='凶煞：';
+    c+=impBad.map(s=>`<em>${s.name}</em>在${s.value}`).join('、')+'，宜避之。';
+  }
+
+  if(!c)c='神煞各安其位，无重大冲犯。';
+
+  let level='平';
+  if(impBad.length>3)level='凶';
+  else if(impGood.length>3&&impBad.length<2)level='吉';
+
+  return {title:'五、神煞提要',sub:`${good.length}吉 · ${bad.length}凶`,content:c,level:level};
+}
+
+function doSummary(blocks,riGan,riZhi,gs,gJ,zs,zJ,sc,tj,r){
+  // 统计各级别
+  const levels=blocks.map(b=>b.level);
+  const gCount=levels.filter(l=>l==='吉').length;
+  const bCount=levels.filter(l=>l==='凶').length;
+
+  let level='平',bigText='中平之卦';
+  if(gCount>=3&&bCount===0){level='吉';bigText='吉利之课'}
+  else if(bCount>=3&&gCount===0){level='凶';bigText='凶险之课'}
+  else if(gCount>bCount){level='吉';bigText='偏吉之卦'}
+  else if(bCount>gCount){level='凶';bigText='偏凶之卦'}
+
+  let c='';
+  if(level==='吉'){
+    c='纵观全课，气运亨通，<em>百事可谋</em>。天地人和，贵人相助，时机成熟，宜主动进取。';
+    if(gJ==='贵人')c+='\n尤以干上见贵人为最吉之兆，遇事有贵人相扶，无需过虑。';
+    if(sc.keTi==='元首')c+='\n元首课配合吉将，大有可为，宜抢占先机。';
+  }else if(level==='凶'){
+    c='纵观全课，气运阻滞，<em>宜守不宜攻</em>。多有凶煞并临，事须谨慎，不可冒进。';
+    if(sc.keTi==='昴星'||sc.keTi==='伏吟'||sc.keTi==='反吟')c+=`\n${sc.keTi}课本为滞涩之象，更需耐心待时。`;
+    c+='\n建议：大事缓办，小事速决，避免重大决策。待气运转好再行大事。';
+  }else{
+    c='纵观全课，<em>吉凶互见</em>，事有起伏。利小不利大，利缓不利急。';
+    c+='\n建议：小事可成，大事须谋定后动。把握吉神所在之时机，避开凶煞当令之方位。';
+  }
+
+  // 课传要点
+  const chuEmpty=r.dateInfo.kong.includes(sc.chuChuan[0]);
+  const moEmpty=r.dateInfo.kong.includes(sc.moChuan[0]);
+  if(chuEmpty&&!moEmpty)c+='\n\n初传虽空，末传不空，<em>先虚后实</em>，耐心等待自有转机。';
+  if(!chuEmpty&&moEmpty)c+='\n\n初传不空，末传空亡，<em>先实后虚</em>，须及时收手，见好就收。';
+
+  return {title:'六、综合断语',sub:bigText,content:c,level:level,bigText:bigText};
+}
+
+
+// ============================================================
+//  渲 染
+// ============================================================
 function render(r){
-  const bz=r.dateInfo.bazi.split(' '),riGanZhi=bz[2],riGan=riGanZhi[0],riZhi=riGanZhi[1];
+  const bz=r.dateInfo.bazi.split(' '),riGan=bz[2][0],riZhi=bz[2][1];
   const tp=r.tianDiPan.tianPan,tj=r.tianDiPan.tianJiang,dp=r.tianDiPan.diPan;
   const dg=r.dunGan,jc=r.jianChu,ke=r.siKe,sc=r.sanChuan;
+  const analysis=buildAnalysis(r);
   let h='';
 
-  // --- 信息栏 ---
-  h+='<div class="info-bar">';
-  h+=`<span class="itag">📅 ${r.dateInfo.date}</span>`;
-  h+=`<span class="itag">八字 <b>${r.dateInfo.bazi}</b></span>`;
-  h+=`<span class="itag">月将 <b>${r.dateInfo.yuejiang}</b></span>`;
-  h+=`<span class="itag">空亡 <b>${r.dateInfo.kong.join('')}</b></span>`;
-  h+=`<span class="itag">课体 <b>${sc.keTi}</b></span>`;
-  h+=`<span class="itag">驿马 <b>${r.dateInfo.yima}</b></span>`;
-  h+=`<span class="itag">旬 <b>${r.dateInfo.xun}</b></span>`;
+  // --- 信息小条 ---
+  h+='<div class="ibar">';
+  h+=`<span class="it">月将 <b>${r.dateInfo.yuejiang}</b></span>`;
+  h+=`<span class="it">空亡 <b>${r.dateInfo.kong.join('')}</b></span>`;
+  h+=`<span class="it">驿马 <b>${r.dateInfo.yima}</b></span>`;
+  h+=`<span class="it">课体 <b>${sc.keTi}</b></span>`;
+  h+=`<span class="it">旬 <b>${r.dateInfo.xun}</b></span>`;
+  h+=`<span class="it">贵人治 <b>${ZHI.find(z=>tj[z]==='贵人')||'?'}</b></span>`;
   h+='</div>';
 
   // --- 天地盘 ---
-  h+='<div class="card"><div class="card-title">天 地 盘</div>';
-
-  // Row 1: 巳午未申
-  h+='<div class="pan-grid">';
-  for(const z of PAN_ROW1)h+=panCell(z,tp,tj,dg,jc,dp);
+  h+='<div class="sec"><div class="sec-title">天 地 盘</div>';
+  h+='<div class="pg">';
+  for(const z of PAN_R1)h+=panCell(z,tp,tj,dg,jc,dp);
   h+='</div>';
-
-  // Row 2: 辰 · center · 酉
-  h+='<div class="pan-grid center-row">';
+  h+='<div class="pg cr" style="margin:3px 0">';
   h+=panCell('辰',tp,tj,dg,jc,dp);
-  h+='<div class="pan-center">';
-  h+=`<div class="label">月将 · ${r.dateInfo.yuejiang}</div>`;
-  h+=`<div class="val">${riGanZhi}</div>`;
-  h+=`<div class="sub">日干 · 日支</div>`;
-  h+=`<div class="sub" style="margin-top:4px;color:var(--red)">空亡 ${r.dateInfo.kong.join('、')}</div>`;
-  h+='</div>';
+  h+=`<div class="pan-mid"><div class="ml">月将 · ${r.dateInfo.yuejiang}</div><div class="mv">${bz[2]}<span style="font-size:12px;color:var(--dim2)"> 日干支</span></div><div class="mh">空亡 ${r.dateInfo.kong.join('、')}</div></div>`;
   h+=panCell('酉',tp,tj,dg,jc,dp);
   h+='</div>';
-
-  // Row 3: 卯 · center · 戌
-  h+='<div class="pan-grid center-row">';
+  h+='<div class="pg cr" style="margin:3px 0">';
   h+=panCell('卯',tp,tj,dg,jc,dp);
-  h+='<div class="pan-center">';
-  h+=`<div class="label">课体</div>`;
-  h+=`<div class="val">${sc.keTi}</div>`;
-  h+=`<div class="sub">${keTiDesc(sc.keTi)}</div>`;
-  h+='</div>';
+  h+=`<div class="pan-mid"><div class="ml">课体</div><div class="mv">${sc.keTi}</div><div class="ms">${keTiShort(sc.keTi)}</div></div>`;
   h+=panCell('戌',tp,tj,dg,jc,dp);
   h+='</div>';
-
-  // Row 4: 寅丑子亥
-  h+='<div class="pan-grid">';
-  for(const z of PAN_ROW4)h+=panCell(z,tp,tj,dg,jc,dp);
+  h+='<div class="pg">';
+  for(const z of PAN_R4)h+=panCell(z,tp,tj,dg,jc,dp);
   h+='</div></div>';
 
-  // --- 四课 ---
-  const keNames=['日干阳','日干阴','日支阳','日支阴'];
-  const keKeys=['ke1','ke2','ke3','ke4'];
-  // 下神推导
-  const xiaShen=[
-    JI_GONG[riGan],
-    (ke.ke1[0]||'').charAt(0),
-    riZhi,
-    (ke.ke3[0]||'').charAt(0)
-  ];
-  h+='<div class="card"><div class="card-title">四 课</div>';
-  h+='<table class="sike-table"><thead><tr>';
-  for(let i=3;i>=0;i--)h+=`<th>第${4-i}课<br>${keNames[i]}</th>`;
-  h+='</tr></thead><tbody>';
-
-  // 上神行
-  h+='<tr>';
-  for(let i=3;i>=0;i--){
+  // --- 四课 + 三传 ---
+  h+='<div class="sec"><div class="sec-title">四 课 与 三 传</div>';
+  // 四课
+  const keNames=['日干阴','日支阴','日干阳','日支阳'];
+  const keKeys=['ke2','ke4','ke1','ke3'];
+  const xia=[(ke.ke1[0]||'').charAt(0),(ke.ke3[0]||'').charAt(0),JG[riGan],riZhi];
+  h+='<div class="kt-sc">';
+  for(let i=0;i<4;i++){
     const shang=(ke[keKeys[i]][0]||'').charAt(0),jiang=ke[keKeys[i]][1]||'';
-    const isKong=r.dateInfo.kong.includes(shang);
-    h+=`<td><div class="ss" style="${isKong?'color:var(--red)':''}">${shang||'?'}</div><div class="jx">${jiang}</div></td>`;
-  }
-  h+='</tr>';
-
-  // 生克关系行
-  h+='<tr>';
-  for(let i=3;i>=0;i--){
-    const shang=(ke[keKeys[i]][0]||'').charAt(0);
-    let rel='';
-    if(i===3)rel=wxRel(shang,(ke.ke3[0]||'').charAt(0));
-    else if(i===2)rel=wxRel(shang,riZhi);
-    else if(i===1)rel=wxRel(shang,xiaShen[1]);
-    else rel=gwRel(shang,riGan);
+    let rel='';if(i<=1)rel=wxRel(shang,xia[i]);else rel=gwxRel(shang,riGan);
     const isBad=rel.includes('克')||rel.includes('⚡');
-    h+=`<td class="rel-td${isBad?'':' good'}">${rel||'—'}</td>`;
-  }
-  h+='</tr>';
-
-  // 下神行
-  h+='<tr>';
-  for(let i=3;i>=0;i--){
-    h+=`<td><div class="xj">${xiaShen[i]||'?'}</div></td>`;
-  }
-  h+='</tr>';
-
-  h+='</tbody></table></div>';
-
-  // --- 三传 ---
-  h+='<div class="card"><div class="card-title">三 传</div>';
-  h+='<div class="sc-row">';
-  const scArr=[{d:sc.chuChuan,ph:'初传 · 发端',init:true},{d:sc.zhongChuan,ph:'中传 · 过程',init:false},{d:sc.moChuan,ph:'末传 · 结局',init:false}];
-  scArr.forEach((s,i)=>{
-    const dzhi=s.d[0]||'?',jiang=s.d[1]||'',liuqin=s.d[2]||'',dungan=s.d[3]||'';
-    const isKong=r.dateInfo.kong.includes(dzhi);
-    h+=`<div class="sc-block${s.init?' init':''}">`;
-    if(i===0)h+=`<div class="keti-badge">${sc.keTi}</div>`;
-    h+=`<div class="ph">${s.ph}</div>`;
-    h+=`<div class="zhi" style="${isKong?'color:var(--red)':''}">${dzhi}</div>`;
-    h+=`<div class="sub">${jiang} · ${liuqin}${dungan?' · 遁'+dungan:''}${isKong?' · <span style="color:var(--red)">空亡</span>':''}</div>`;
+    h+=`<div class="kt-cell${i>=2?' first':''}">`;
+    h+=`<div class="kl">${keNames[i]}课</div>`;
+    h+=`<div class="ks"${r.dateInfo.kong.includes(shang)?' style="color:var(--red)"':''}>${shang||'?'}</div>`;
+    h+=`<div class="kx">上神 · ${jiang}</div>`;
+    h+=`<div class="kr${isBad?'':' g'}">${rel||''}${xia[i]?' → '+xia[i]:''}</div>`;
     h+='</div>';
-    if(i<2)h+='<div class="sc-arrow">→</div>';
-  });
-  h+='</div></div>';
-
-  // --- 十二天将 ---
-  h+='<div class="card"><div class="card-title">十二天将</div><div class="tj-grid">';
-  for(const z of ZHI){
-    const isGr=tj[z]==='贵人';
-    h+=`<div class="tj-item${isGr?' gr':''}"><div class="dz">${z}</div><div class="nm">${tj[z]||'?'}</div></div>`;
   }
-  h+='</div></div>';
-
-  // --- 干支分析 ---
-  const gs=(ke.ke1[0]||'').charAt(0),zs=(ke.ke3[0]||'').charAt(0);
-  const gJiang=ke.ke1[1]||'',zJiang=ke.ke3[1]||'';
-  const goodJ=['贵人','青龙','六合','太常','天后'];
-  const badJ=['白虎','腾蛇','玄武'];
-  const gGood=goodJ.includes(gJiang),gBad=badJ.includes(gJiang);
-  const zGood=goodJ.includes(zJiang),zBad=badJ.includes(zJiang);
-
-  h+='<div class="card"><div class="card-title">干支速断</div>';
-  h+=`<div class="an-row"><span class="L">日干支</span><span class="R">${riGanZhi}</span></div>`;
-  h+=`<div class="an-row"><span class="L">干上神（自身）</span><span class="R">${gs} · ${gJiang}${r.dateInfo.kong.includes(gs)?' <b style="color:var(--red)">空</b>':''}</span></div>`;
-  h+=`<div class="an-row"><span class="L">支上神（他人/宅）</span><span class="R">${zs} · ${zJiang}${r.dateInfo.kong.includes(zs)?' <b style="color:var(--red)">空</b>':''}</span></div>`;
-  h+=`<div class="an-row"><span class="L">干上气势</span>${gGood?'<span class="R g">🟢 吉将临身 · 气势通畅</span>':gBad?`<span class="R b">🔴 ${gJiang}临干 · 压力在身</span>`:'<span class="R w">🟡 中性 · 平淡待时</span>'}</div>`;
-  h+=`<div class="an-row"><span class="L">支上气势</span>${zGood?'<span class="R g">🟢 吉将临支 · 彼方气旺</span>':zBad?`<span class="R b">🔴 凶将临支 · 彼方受压</span>`:'<span class="R">— 平常</span>'}</div>`;
-
-  // 三传六亲链
-  const lqChain=scArr.map(s=>s.d[2]||'').filter(Boolean).join(' → ');
-  h+=`<div class="an-row"><span class="L">三传六亲</span><span class="R">${lqChain||'—'}</span></div>`;
-
-  // 课体详析
-  h+=`<div class="an-row"><span class="L">课体</span><span class="R" style="color:var(--gold-lt)">${sc.keTi} · ${keTiDesc(sc.keTi)}</span></div>`;
-
-  // 贵人状态
-  const guiPos=ZHI.find(z=>tj[z]==='贵人');
-  h+=`<div class="an-row"><span class="L">贵人治所</span><span class="R">${guiPos||'?'} · ${tj[guiPos]||''}</span></div>`;
-
   h+='</div>';
 
+  // 三传
+  h+='<div class="sc-flow">';
+  const scs=[{d:sc.chuChuan,l:'初传 · 发端',fi:true},{d:sc.zhongChuan,l:'中传 · 过程',fi:false},{d:sc.moChuan,l:'末传 · 结局',fi:false}];
+  scs.forEach((s,i)=>{
+    const dzhi=s.d[0]||'?',jiang=s.d[1]||'',liuqin=s.d[2]||'',dungan=s.d[3]||'';
+    const isK=r.dateInfo.kong.includes(dzhi);
+    h+=`<div class="sc-b${s.fi?' first':''}">`;
+    if(i===0)h+=`<div class="badge">${sc.keTi}</div>`;
+    h+=`<div class="ph">${s.l}</div>`;
+    h+=`<div class="sz"${isK?' style="color:var(--red)"':''}>${dzhi}</div>`;
+    h+=`<div class="si">${jiang} · ${liuqin}${dungan?' · 遁'+dungan:''}${isK?' · <span style="color:var(--red)">空亡</span>':''}</div>`;
+    h+='</div>';
+    if(i<2)h+='<div class="sc-arr">→</div>';
+  });
+  h+='</div>';
+
+  // 天将
+  h+='<div class="tj-bar">';
+  for(const z of ZHI){
+    const nm=tj[z]||'?',isGr=nm==='贵人';
+    h+=`<div class="tj-b${isGr?' gr':''}"><div class="dz">${z}</div><div class="nm">${nm}</div></div>`;
+  }
+  h+='</div></div>';
+
   // --- 神煞 ---
-  h+='<div class="card"><div class="card-title">神 煞</div>';
-  const ssByType=categorizeShenSha(r.shenSha);
-  for(const [cat,tags] of Object.entries(ssByType)){
+  h+='<div class="sec"><div class="sec-title">神 煞</div>';
+  const ssCat={吉神:[],凶煞:[]};
+  for(const s of r.shenSha)(BAD_SHAS.has(s.name)?ssCat['凶煞']:ssCat['吉神']).push(s);
+  for(const [cat,tags] of Object.entries(ssCat)){
     if(!tags.length)continue;
-    h+=`<div class="ss-group"><div class="ss-label">${cat}</div><div class="ss-row">`;
-    for(const t of tags){
-      h+=`<span class="ss-tag${t.bad?' bad':''}" title="${t.desc||''}">${t.name}<span class="ss-v">${t.value}</span></span>`;
-    }
+    h+=`<div class="ss-sec"><div class="ssl">${cat} (${tags.length})</div><div class="ss-r">`;
+    for(const t of tags)h+=`<span class="ss-t${BAD_SHAS.has(t.name)?' bad':''}" title="${t.description||''}">${t.name}<span class="ssv">${t.value}</span></span>`;
     h+='</div></div>';
   }
+  h+='</div>';
+
+  // ====== 分析报告 ======
+  h+='<div class="an-card"><div class="an-title">📋 断 课 分 析 报 告</div>';
+  for(const b of analysis){
+    const lv=b.level||'平';
+    const badgeCls=lv==='吉'?'good':lv==='凶'?'bad':'warn';
+    h+=`<div class="an-block">`;
+    h+=`<div class="an-h">${b.title}<span class="an-badge ${badgeCls}">${lv==='吉'?'🟢 吉':lv==='凶'?'🔴 凶':'🟡 平'}</span></div>`;
+    if(b.sub)h+=`<div style="font-size:11px;color:var(--dim);margin-bottom:6px;letter-spacing:.5px">${b.sub}</div>`;
+    h+=`<div class="an-p">${b.content.replace(/\n/g,'<br>')}</div>`;
+    h+='</div>';
+  }
+
+  // 综合结论
+  const sumBlock=analysis[analysis.length-1];
+  const sumCls=sumBlock.level==='吉'?'good':sumBlock.level==='凶'?'bad':'warn';
+  h+=`<div class="an-summary"><div class="as-big ${sumCls}">${sumBlock.bigText||'中平之卦'}</div><div class="as-sub">晴子 · 大六壬断课 | 仅供参考</div></div>`;
   h+='</div>';
 
   $('result').innerHTML=h;
   $('result').classList.add('on');
 }
 
-// ===== 辅助函数 =====
 function panCell(z,tp,tj,dg,jc,dp){
   if(!z)return'<div></div>';
   const t=tp[z]||'?',j=tj[z]||'',d=dg[z]||'',c=jc[z]||'';
-  const isGui=j==='贵人',hasJc=!!c;
-  let cls='pan-cell';
-  if(hasJc)cls+=' has-jc';
-  if(isGui)cls+='' /* no special class needed for cell */;
-  let inner='';
-  if(c)inner+=`<div class="jc">${c}</div>`;
-  inner+=`<div class="tp"${isGui?' style="color:#ffe090"':''}>${t}</div>`;
-  if(j)inner+=`<div class="tj"${isGui?' style="color:#ffe090"':''}>${j}</div>`;
-  if(d)inner+=`<div class="dg">遁${d}</div>`;
-  inner+=`<div class="dp">${dp[z]||z}</div>`;
-  return `<div class="${cls}">${inner}</div>`;
+  const isGr=j==='贵人';
+  let cls='pc'+(isGr?' grp':'');
+  let s='';
+  if(c)s+=`<div class="jc">${c}</div>`;
+  s+=`<div class="tp"${isGr?' style="color:#ffe090"':''}>${t}</div>`;
+  if(j)s+=`<div class="tj"${isGr?' style="color:#ffe090"':''}>${j}</div>`;
+  if(d)s+=`<div class="dun">遁${d}</div>`;
+  s+=`<div class="dp">${dp[z]||z}</div>`;
+  return `<div class="${cls}">${s}</div>`;
 }
 
-function keTiDesc(kt){
-  const m={
-    '元首':'上克下 · 顺局 · 百事宜先发制人',
-    '重审':'下克上 · 逆局 · 事须三思后行',
-    '涉害':'多克并存 · 事情复杂需细致抉择',
-    '遥克':'蒿矢/弹射 · 力轻而远 · 待时发力',
-    '昴星':'虎视/冬蛇 · 闭塞不通 · 宜守不宜攻',
-    '别责':'借势成事 · 须借他人之力',
-    '八专':'独足 · 事有专主 · 不宜旁骛',
-    '反吟':'反复不定 · 来得快去得快 · 宜速决',
-    '伏吟':'迟滞不动 · 守旧待时 · 不宜妄动'
-  };
-  return m[kt]||'详参课传';
-}
+function keTiShort(kt){return {'元首':'以上制下 · 顺局','重审':'以下犯上 · 逆局','涉害':'多克取用 · 杂局','遥克':'力轻而远 · 待时','昴星':'闭塞不通 · 宜守','别责':'借力成事 · 合作','八专':'独足之象 · 专一','反吟':'反复不定 · 速决','伏吟':'迟滞不动 · 守旧'}[kt]||'';}
 
-function categorizeShenSha(ss){
-  const cats={吉神:[],凶煞:[],其他:[]};
-  const badSet=new Set(['岁破','病符','丧门','吊客','白虎','岁墓','死气','死神','月破','四废','破碎','劫煞','亡神','天鬼','天刑','天狱','飞廉','大煞','小煞','血支','血忌','四丘','四墓','孤辰','寡宿','月厌','奸门','丧车','火鬼','游神','官符','岁刑','天贼','浴盆']);
-  for(const s of ss){
-    const bad=badSet.has(s.name);
-    (bad?cats['凶煞']:cats['吉神']).push({...s,bad});
-  }
-  return cats;
-}
-
-// 页面加载自动起课
-window.addEventListener('DOMContentLoaded',()=>{divine()});
+window.addEventListener('DOMContentLoaded',()=>{go()});
 </script>
 </body>
 </html>
