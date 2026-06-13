@@ -215,23 +215,17 @@ async function go(){
   if(!y||!m||!d){return}
   const now=new Date();
   const useMin=now.getMinutes();
-  // 问题派生时辰：同一时辰内不同问题通过hash映射到不同时辰
-  let useHour=h;
-  if(question){
-    let hash=0;for(let i=0;i<question.length;i++)hash=(hash*31+question.charCodeAt(i))>>>0;
-    useHour=(h+hash%12)%24;
-  }
   $('ld').classList.add('on');$('result').classList.remove('on');
   window.scrollTo({top:0,behavior:'smooth'});
   try{
     const [resp,aiResp]=await Promise.all([
-      fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:useHour,minute:useMin})}),
-      fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:useHour,question})})
+      fetch('/api/liuren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,minute:useMin})}),
+      fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:h,question})})
     ]);
     const r=await resp.json();
     if(r.error){alert(r.error);return}
     const aiResult=await aiResp.json().catch(()=>({fallback:true}));
-    showTime(r.dateInfo,y,m,d,useHour,useMin);
+    showTime(r.dateInfo,y,m,d,h,useMin);
     _lastAnalysisTime=Date.now();
     renderAnalysis(r,question,aiResult);
   }catch(e){alert('请求失败: '+e.message)}
